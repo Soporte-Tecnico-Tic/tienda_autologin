@@ -1,0 +1,10 @@
+name: Tienda Decoupled
+type: module  
+description: Funcionalidades para la Tienda Desacoplada
+core_version_requirement: ^8.7.7 || ^9 
+package: Tienda
+
+configure: tienda_decoupled.settings_form
+
+dependencies:
+  - externalauth:externalauth

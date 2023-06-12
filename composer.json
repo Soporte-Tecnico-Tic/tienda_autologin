@@ -1,0 +1,21 @@
+
+{
+  "name": "soporte-tecnico-tic/tienda_desacoplada",
+  "description": "Funcionalidad principal para la Tienda Desacoplada",
+  "type": "drupal-custom-module",
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=8.0",
+    "drupal/core": "^9",
+    "drupal/externalauth": "^2.0",
+    "drupal/restui": "^1.21"
+  },
+  "license": "GPL-2.0",
+  "authors": [
+    {
+      "name": "Soporte Técnico Tic",
+      "email": "juan@jumpintotech.com",
+      "role": "Developer"
+    }
+  ]
+}
