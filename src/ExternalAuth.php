@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tienda_decoupled;
+namespace Drupal\tienda_autologin;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -8,15 +8,11 @@ use GuzzleHttp\Exception\RequestException;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 use Drupal\Component\Serialization\Json;
-use Psr\Http\Message\ResponseInterface;
-use Drupal\Core\Url;
-use Drupal\user\Entity\User;
 
 /**
  * Service to handle external authentication logic.
  */
 class ExternalAuth {
-
   /**
    * The entity type manager service.
    *
@@ -66,6 +62,11 @@ class ExternalAuth {
   private $client;
 
   /**
+   * Cookie for autentication of user
+   */
+  private $cookie;
+
+  /**
    * {@inheritdoc}
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -79,7 +80,7 @@ class ExternalAuth {
     $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
     $this->eventDispatcher = $event_dispatcher;
-    $this->config =  \Drupal::config('tienda_decoupled.configuration');
+    $this->config =  \Drupal::config('tienda_autologin.configuration');
     $this->api_url = $this->config->get('backend_url');
     $this->client = \Drupal::httpClient();
   }
@@ -119,11 +120,47 @@ class ExternalAuth {
 
   /**
    * {@inheritdoc}
-   * Autenticar en microservicio
+   * Obtener la información del usuario
    */
-  public function getUser($user_uid) {
+  public function getCurrentUser($cookie_value) {
     try {
-      $response = $this->client->get("{$this->api_url}/user/{$user_uid}?_format=json");
+      $response = $this->client->get("{$this->api_url}/current-user?_format=json", [
+        'headers' => [
+          'Accept' => 'application/json', 
+          'Content-Type' => 'application/json',
+          'Cookie' => $cookie_value
+        ],
+        'verify' => boolval($this->config->get('certificate_url'))
+      ]);
+
+      $data = Json::Decode($response->getBody()->getContents());
+
+      if (empty($data)) {
+        return FALSE;
+      }
+      else {
+        return $data;
+      }
+    } catch (RequestException $e) {
+      return FALSE;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   * Obtener la información del usuario
+   */
+  public function getUser($cookie_value, $user_uid) {
+    try {
+      $response = $this->client->get("{$this->api_url}/user/{$user_uid}?_format=json", [
+        'headers' => [
+          'Accept' => 'application/json', 
+          'Content-Type' => 'application/json',
+          'Cookie' => $cookie_value
+        ],
+        'verify' => boolval($this->config->get('certificate_url'))
+      ]);
+
       $data = Json::Decode($response->getBody()->getContents());
 
       if (empty($data)) {
@@ -147,11 +184,17 @@ class ExternalAuth {
    * @return string
    *   The URL string.
    */
-  protected function getLoginStatusUrlString($format = 'json') {
-    $user_login_status_url = Url::fromRoute('user.login_status.http');
-    $user_login_status_url->setRouteParameter('_format', $format);
-    $user_login_status_url->setAbsolute();
-    return $user_login_status_url->toString();
+  public function getLoginStatus($cookie_value, $format = 'json') {
+    $response = $this->client->get("{$this->api_url}/user/login_status?_format={$format}", [
+      'headers' => [
+        'Accept' => 'application/json', 
+        'Content-Type' => 'application/json',
+        'Cookie' => $cookie_value
+      ],
+      'verify' => boolval($this->config->get('certificate_url'))
+      ]);
+     $status_user = $response->getBody()->getContents();
+     return $status_user;
   }
 
   /**
@@ -159,43 +202,40 @@ class ExternalAuth {
    * Autenticar en microservicio
    */
   public function load($user_name, $user_pass, $format='json') {
-    try {     
-      $response = $this->client->post("{$this->api_url}/user/login?_format=json", [
-       'body' => Json::Encode([
+    try {
+      $result = $this->client->post("{$this->api_url}/user/login?_format=$format", [
+        'body' => Json::Encode([
           'name' => "{$user_name}",
           'pass' => "{$user_pass}"
         ]),
         'headers' => [
-          'Accept' => 'application/json', 
-          'Content-Type' => 'application/json',
+          'Accept' => "application/{$format}",
+          'Content-Type' => "application/{$format}",
           'X-CSRF-Token' => $this->getTokenAccess()
         ],
-        'verify' => false,
-       // 'cookies' => $this->cookies,
+        'http_errors' => FALSE,
+        'verify' => boolval($this->config->get('certificate_url')),
       ]);
 
-      $data = Json::Decode($response->getBody()->getContents());
+      $has_authenticate = false;
+      $content['body'] = Json::Decode($result->getBody()->getContents());
+      foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
+        if(substr($value_cookie, 0, 4) === "SESS"){
+          $content['cookie'] = $value_cookie;
+          $has_authenticate = true;
+        }
+      }
 
-      $response = $this->client->get("{$this->api_url}/user/login_status?_format=json", ['verify' => false]);
-      $status_user = $response->getBody()->getContents();
-
-      $account_data = [];
-
-      //$account = user_load_by_name($data['current_user']['name']);
-      $authmap = \Drupal::service('externalauth.authmap');
-      $externalauth = \Drupal::service('externalauth.externalauth');
-      $provider = 'tienda_decoupled';
-
-      // loginRegister will only make a new account if one does not exist.
-      $account = $externalauth->loginRegister($data['current_user']['name'], $provider, $account_data);
-      setcookie("tiendadecoupleduser", json_encode(["u" => $data['current_user']['name'], "s" => $status_user]), \Drupal::time()->getRequestTime()+3600);
-
-      if (empty($data)) {
-        return FALSE;
+      if ($has_authenticate) {
+        $cookie = $content['cookie'];
+        // Explode the cookie string using a series of semicolons
+        $pieces = array_filter(array_map('trim', explode(';', $cookie)));
+        $this->cookie = $pieces[0];
+        $content['cookie'] = $this->cookie;
+        return $content;
       }
       else {
-
-        return $data;
+        return ['error' => $content['body']];
       }
     } catch (RequestException $e) {
       if (!$e->hasResponse()) {
@@ -216,6 +256,6 @@ class ExternalAuth {
     if (!empty($response["error"])) {
       return $response;
     }
-    return;
+    return $response;
   }
 }

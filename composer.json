@@ -1,12 +1,11 @@
 {
-  "name": "soporte-tecnico-tic/tienda_desacoplada",
-  "description": "Funcionalidad principal para la Tienda Desacoplada",
+  "name": "soporte-tecnico-tic/tienda_autologin",
+  "description": "Funcionalidad principal para la Tienda Autologin",
   "type": "drupal-custom-module",
   "minimum-stability": "dev",
   "require": {
     "php": ">=8.0",
-    "drupal/core": "^9",
-    "drupal/externalauth": "^2.0"
+    "drupal/core": "^9"
   },
   "license": "GPL-2.0",
   "authors": [

@@ -1,6 +1,0 @@
-tienda_decoupled.settings_form:  
-  title: 'Configuración del API login'  
-  route_name: tienda_decoupled.settings_form  
-  description: 'Configuración del API login de la tienda'  
-  parent: system.admin_config_system  
-  weight: 99

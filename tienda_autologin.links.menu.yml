@@ -1,0 +1,6 @@
+tienda_autologin.settings_form:  
+  title: 'Configuración de funcionalidades de la tienda'  
+  route_name: tienda_autologin.settings_form  
+  description: 'Configuración de funcionalidades de la tienda multilogin'  
+  parent: system.admin_config_system  
+  weight: 99

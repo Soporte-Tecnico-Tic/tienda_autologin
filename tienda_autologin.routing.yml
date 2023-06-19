@@ -1,0 +1,9 @@
+tienda_autologin.settings_form:
+  path: '/admin/config/tienda/autologin'
+  defaults:
+    _form: '\Drupal\tienda_autologin\Form\TiendaAutoLoginForm'
+    _title: 'Funcionalidad del login automatico en la tienda'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
