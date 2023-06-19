@@ -1,5 +1,5 @@
 {
-  "name": "soporte-tecnico-tic/tienda_desacoplada",
+  "name": "soporte-tecnico-tic/tienda_autologin",
   "description": "Funcionalidad principal para la Tienda Autologin",
   "type": "drupal-custom-module",
   "minimum-stability": "dev",
