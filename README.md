@@ -1,4 +1,4 @@
-# Módulo tienda_desacoplada
+# Módulo tienda_autologin
 Funcionalidad principal para la Tienda Desacoplada
 Este modulo facilita el login de usuarios de drupal con cuentas externas.
 Sincroniza el login y logout mediante una cookie consultando el status de la sesion del usuario.
