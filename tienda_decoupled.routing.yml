@@ -1,9 +1,0 @@
-tienda_decoupled.settings_form:
-  path: '/admin/config/tienda/decoupled/login'
-  defaults:
-    _form: '\Drupal\tienda_decoupled\Form\TiendaDecoupledForm'
-    _title: 'Configuración del API login'
-  requirements:
-    _permission: 'administer site configuration'
-  options:
-    _admin_route: TRUE

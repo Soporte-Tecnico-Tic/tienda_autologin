@@ -1,0 +1,154 @@
+<?php
+/**
+ * @file
+ * Module for the Tienda autologin User Entity.
+ */
+use \Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Session\AccountInterface;
+use GuzzleHttp\Exception\RequestException;
+use Drupal\Component\Serialization\Json;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_form_alter().
+ */
+function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  switch ($form_id) {
+    case 'user_login_form':
+      if (@in_array('::validateFinal', $form['#validate'])) {
+        $key = array_search('::validateFinal', $form['#validate']);
+        $form['#validate'][$key] = 'tienda_autologin_auth_authenticate';
+        $form['#validate'][] = 'tienda_autologin_get_account';
+        $form['#validate'][] = 'tienda_autologin_user_login_redirect';
+        $form['#validate'][] = '::validateFinal';
+      }
+      break;
+  }
+}
+
+function tienda_autologin_user_login_redirect(&$form, FormStateInterface $form_state) {
+  if (!empty($form_state->getValue('current_user_cookie'))) {
+    $config =  \Drupal::config('tienda_autologin.configuration');
+    $api_url = $config->get('backend_url');
+
+    $cookie_value = urlencode($form_state->getValue('current_user_cookie'));
+
+    $host = \Drupal::request()->getSchemeAndHttpHost();
+
+    $host = urlencode($host);
+
+    $homeResponse = new RedirectResponse("{$api_url}/tienda/synclogin/{$cookie_value}?redirect={$host}");
+    $homeResponse->send();
+  }
+}
+
+/**
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param $form_id
+ */
+function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_state) {
+  if (!$form_state->get('uid')) {
+    $user_name = $form_state->getValue('name');
+    $user_pass = trim($form_state->getValue('pass'));
+
+    $authentication = \Drupal::service('tienda_autologin.externalauth');
+    $response = $authentication->login($user_name, $user_pass);
+
+    if (!empty($response["error"])) {
+      $key = key($response["error"]);
+      return $form_state->setErrorByName('name', $response["error"][$key]);
+    }
+
+    $cookie_value = $response['cookie'];
+
+    $content_user = $response['body'];
+    $uid = $content_user['current_user']['uid'];
+
+    $form_state->setValue('current_user_uid', $uid);
+    $form_state->setValue('current_user_cookie', $cookie_value);
+
+    setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
+  }
+}
+
+/**
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param $form_id
+ */
+function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
+  $authentication = \Drupal::service('tienda_autologin.externalauth');
+  $cookie_value = $form_state->getValue('current_user_cookie');
+
+  //auto login
+  $status_user = $authentication->getLoginStatus($cookie_value);
+  if ($status_user) {
+    $uid = $form_state->getValue('current_user_uid');
+    $user_values = $authentication->getUser($cookie_value, $uid);
+
+    //destroy values
+    unset($user_values['uid']);
+    unset($user_values['uuid']);
+
+    $email = $user_values['mail'][0]['value'];
+    if ($account = user_load_by_mail($email)) {
+      //user_login_finalize($account);
+    }
+    else {// Create user object.
+      $account = User::create();
+      foreach ($user_values as $key => $datas) {
+        foreach ($datas as $data) {
+          $account->set($key, $data['value']);
+        }
+      }
+
+      $account->enforceIsNew();
+      $account->save();
+    }
+    $form_state->set('uid', $account->id());
+  }
+  return $form;
+}
+
+/**
+ * hook_user_logout
+ */
+function tienda_autologin_user_logout(AccountInterface $account) {
+  $config =  \Drupal::config('tienda_autologin.configuration');
+  $api_url = $config->get('backend_url');
+
+  $format = 'json';
+  if (!empty($api_url)) {
+    try {
+      $cookie_value = $_COOKIE['tienda_autologin'];
+
+      $client = \Drupal::httpClient();
+      $response = $client->get("{$api_url}/user/logout?_format={$format}", [
+        'headers' => [
+          'Accept' => "application/{$format}", 
+          'Content-Type' => "application/{$format}",
+          'Cookie' => $cookie_value
+        ],
+        'verify' => boolval($config->get('certificate_url'))
+      ]);
+      $response = $response->getBody()->getContents();
+  
+      //destroy cookie tienda_autologin_user
+      setcookie('tienda_autologin', '', \Drupal::time()->getRequestTime() - 3600, '/');
+      unset($_COOKIE['tienda_autologin']);
+    } catch (RequestException $e) {
+      if (!$e->hasResponse()) {
+        throw $e;
+      }
+      $response = $e->getResponse();
+  
+      $data = Json::Decode($response->getBody()->getContents());
+      $messenger = \Drupal::Messenger();
+      $messenger->addMessage($data["message"],$messenger::TYPE_ERROR,true);
+      $response = new RedirectResponse('user');
+      return $response;
+    }
+  }
+}

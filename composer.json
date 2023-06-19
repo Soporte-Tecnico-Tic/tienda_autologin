@@ -5,8 +5,7 @@
   "minimum-stability": "dev",
   "require": {
     "php": ">=8.0",
-    "drupal/core": "^9",
-    "drupal/externalauth": "^2.0"
+    "drupal/core": "^9"
   },
   "license": "GPL-2.0",
   "authors": [

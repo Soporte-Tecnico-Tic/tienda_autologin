@@ -1,5 +1,5 @@
 <?php
-  namespace Drupal\tienda_decoupled\Form;
+  namespace Drupal\tienda_autologin\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -8,13 +8,13 @@ use Drupal\user\Entity\Role;
 /**
  * Configure example settings for this site.
  */
-class TiendaDecoupledForm extends ConfigFormBase {
+class TiendaAutoLoginForm extends ConfigFormBase {
   /**  
    * {@inheritdoc}  
    */  
   protected function getEditableConfigNames() {  
     return [  
-      'tienda_decoupled.configuration',  
+      'tienda_autologin.configuration',  
     ];  
   } 
 
@@ -22,7 +22,7 @@ class TiendaDecoupledForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'tienda_decoupled_configuration_form';
+    return 'tienda_autologin_configuration_form';
   }
 
 
@@ -30,7 +30,7 @@ class TiendaDecoupledForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->config('tienda_decoupled.configuration');  
+    $config = $this->config('tienda_autologin.configuration');  
 
     $form['backend_url'] = [
       '#type' => 'url',
@@ -55,6 +55,13 @@ class TiendaDecoupledForm extends ConfigFormBase {
       '#options' => $options
     ];
 
+    $form['certificate_url'] = array(
+      '#type' => 'radios',
+      '#title' => t('Verificar el certificado del HOST'),
+      '#options' => [true => t("SI"), false => t('NO')],
+      '#default_value' => $config->get('certificate_url')
+    );
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -64,16 +71,17 @@ class TiendaDecoupledForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);  
   
-    $config = $this->config('tienda_decoupled.configuration');
+    $config = $this->config('tienda_autologin.configuration');
     if ($form_state->hasValue('backend_url')) {
       $keys = [
         'backend_url',
-        'roles_exclude'
+        'roles_exclude',
+        'certificate_url'
       ];
 
       //set values
       foreach ($keys as $key) {
-        $this->config('tienda_decoupled.configuration')->set($key, $form_state->getValue($key))->save();
+        $this->config('tienda_autologin.configuration')->set($key, $form_state->getValue($key))->save();
       }
     }
   }
