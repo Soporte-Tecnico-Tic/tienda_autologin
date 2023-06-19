@@ -16,12 +16,15 @@ use Drupal\user\Entity\User;
 function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   switch ($form_id) {
     case 'user_login_form':
+      $config =  \Drupal::config('tienda_autologin.configuration');
       if (@in_array('::validateFinal', $form['#validate'])) {
-        $key = array_search('::validateFinal', $form['#validate']);
-        $form['#validate'][$key] = 'tienda_autologin_auth_authenticate';
-        $form['#validate'][] = 'tienda_autologin_get_account';
-        $form['#validate'][] = 'tienda_autologin_user_login_redirect';
-        $form['#validate'][] = '::validateFinal';
+        if ($config->get('backend_url')) {
+          $key = array_search('::validateFinal', $form['#validate']);
+          $form['#validate'][$key] = 'tienda_autologin_auth_authenticate';
+          $form['#validate'][] = 'tienda_autologin_get_account';
+          $form['#validate'][] = 'tienda_autologin_user_login_redirect';
+          $form['#validate'][] = '::validateFinal';
+        }
       }
       break;
   }
