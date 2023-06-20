@@ -62,11 +62,6 @@ class ExternalAuth {
   private $client;
 
   /**
-   * Cookie for autentication of user
-   */
-  private $cookie;
-
-  /**
    * {@inheritdoc}
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -122,9 +117,9 @@ class ExternalAuth {
    * {@inheritdoc}
    * Obtener la información del usuario
    */
-  public function getCurrentUser($cookie_value) {
+  public function getCurrentUser($cookie_value, $format = 'json') {
     try {
-      $response = $this->client->get("{$this->api_url}/current-user?_format=json", [
+      $response = $this->client->get("{$this->api_url}/current-user?_format={$format}", [
         'headers' => [
           'Accept' => 'application/json', 
           'Content-Type' => 'application/json',
@@ -150,9 +145,9 @@ class ExternalAuth {
    * {@inheritdoc}
    * Obtener la información del usuario
    */
-  public function getUser($cookie_value, $user_uid) {
+  public function getUser($cookie_value, $user_uid, $format = 'json') {
     try {
-      $response = $this->client->get("{$this->api_url}/user/{$user_uid}?_format=json", [
+      $response = $this->client->get("{$this->api_url}/user/{$user_uid}?_format={$format}", [
         'headers' => [
           'Accept' => 'application/json', 
           'Content-Type' => 'application/json',
@@ -199,11 +194,62 @@ class ExternalAuth {
 
   /**
    * {@inheritdoc}
+   * Registrar el usuario en microservicio
+   */
+  public function save($values, $format='json') {
+    try {
+      $result = $this->client->post("{$this->api_url}/user/register?_format=$format", [
+        'body' => Json::Encode([
+          'name' => ["value" => "{$values['name']}"],
+          'pass' => ["value" => "{$values['pass']}"],
+          'mail' => ["value" => "{$values['mail']}"],
+          //'status' => ["value" => "{$values['status']}"]
+        ]),
+        'headers' => [
+          'Accept' => "application/{$format}",
+          'Content-Type' => "application/{$format}",
+          'X-CSRF-Token' => $this->getTokenAccess()
+        ],
+        'http_errors' => FALSE,
+        'verify' => boolval($this->config->get('certificate_url')),
+      ]);
+
+      $has_authenticate = false;
+      $content['body'] = Json::Decode($result->getBody()->getContents());
+      foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
+        if(substr($value_cookie, 0, 4) === "SESS"){
+          $content['cookie'] = $value_cookie;
+          $has_authenticate = true;
+        }
+      }
+
+      if ($has_authenticate) {
+        $cookie = $content['cookie'];
+        // Explode the cookie string using a series of semicolons
+        $pieces = array_filter(array_map('trim', explode(';', $cookie)));
+        $content['cookie'] = $pieces[0];
+        return $content;
+      }
+      else {
+        return ['error' => $content['body']];
+      }
+    } catch (RequestException $e) {
+      if (!$e->hasResponse()) {
+        throw $e;
+      }
+      $response = $e->getResponse();
+      $data = Json::Decode($response->getBody()->getContents());
+      return ["error" => $data["message"]];
+    }
+  }
+
+  /**
+   * {@inheritdoc}
    * Autenticar en microservicio
    */
   public function load($user_name, $user_pass, $format='json') {
     try {
-      $result = $this->client->post("{$this->api_url}/user/login?_format=$format", [
+      $result = $this->client->post("{$this->api_url}/user/login?_format={$format}", [
         'body' => Json::Encode([
           'name' => "{$user_name}",
           'pass' => "{$user_pass}"
@@ -230,8 +276,7 @@ class ExternalAuth {
         $cookie = $content['cookie'];
         // Explode the cookie string using a series of semicolons
         $pieces = array_filter(array_map('trim', explode(';', $cookie)));
-        $this->cookie = $pieces[0];
-        $content['cookie'] = $this->cookie;
+        $content['cookie'] = $pieces[0];
         return $content;
       }
       else {
