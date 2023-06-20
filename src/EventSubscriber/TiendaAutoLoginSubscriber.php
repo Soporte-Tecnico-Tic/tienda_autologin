@@ -14,8 +14,8 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
    */
   public function externalAuthLoginRegister(GetResponseEvent $event) {
     $config =  \Drupal::config('tienda_autologin.configuration');
-
     $authentication = \Drupal::service('tienda_autologin.externalauth');
+
     if (!empty($_COOKIE['tienda_autologin'])) {
       $cookie_value = $_COOKIE['tienda_autologin'];
       $status_user = $this->getLoginStatus($cookie_value);
