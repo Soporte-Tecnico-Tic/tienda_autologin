@@ -66,18 +66,16 @@ function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_
     $user_name = $form_state->getValue('name');
     $user_pass = trim($form_state->getValue('pass'));
 
-    $authentication = \Drupal::service('tienda_autologin.externalauth');
-    $response = $authentication->login($user_name, $user_pass);
-
+    $response = $authentication->login($user_name, $user_pass); 
     if (!empty($response['cookie'])) {
       $cookie_value = $response['cookie'];
       $form_state->setValue('current_user_cookie', $cookie_value);
+      $session = \Drupal::request()->getSession();
+      $session->set('tienda_autologin_user', $cookie_value);
+  
+      setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
     }
   
-    $session = \Drupal::request()->getSession();
-    $session->set('tienda_autologin_user', $cookie_value);
-
-    setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
     return $form;
   }
 

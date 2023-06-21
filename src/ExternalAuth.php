@@ -225,7 +225,7 @@ class ExternalAuth {
       $has_authenticate = false;
       $content['body'] = Json::Decode($result->getBody()->getContents());
       foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
-        if(substr($value_cookie, 0, 4) === "SESS"){
+        if(substr($value_cookie, 0, 4) === "SSES" || substr($value_cookie, 0, 4) === "SESS"){
           $content['cookie'] = $value_cookie;
           $has_authenticate = true;
         }
@@ -273,13 +273,14 @@ class ExternalAuth {
 
       $has_authenticate = false;
       $content['body'] = Json::Decode($result->getBody()->getContents());
+
       foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
-        if(substr($value_cookie, 0, 4) === "SESS"){
+        if(substr($value_cookie, 0, 4) === "SSES" || substr($value_cookie, 0, 4) === "SESS"){
           $content['cookie'] = $value_cookie;
           $has_authenticate = true;
         }
       }
-
+      
       if ($has_authenticate) {
         $cookie = $content['cookie'];
         // Explode the cookie string using a series of semicolons
