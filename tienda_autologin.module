@@ -42,6 +42,7 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
  */
 function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_state) {
   $authentication = \Drupal::service('tienda_autologin.externalauth');
+  $config =  \Drupal::config('tienda_autologin.configuration');
 
   $form_state->setValue('name', $form_state->getValue('mail'));
 
@@ -51,8 +52,16 @@ function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_
     "mail" => $form_state->getValue('mail')
   ];
 
+  //enviar los valores de los campos disponibles
+  $campos_disponibles_usuario = (array) json_decode($config->get('campos_disponibles_usuario_autologin'));
+  foreach ($campos_disponibles_usuario as $field_name => $value) {
+    if (!empty($form_state->getValue($value))) {
+      $values[$field_name] = $form_state->getValue($value);
+    }
+  }
+  
   $response = $authentication->save($values);
-  if (array_key_exists('uid', $response["error"])) {
+  if (!empty($response["error"]) && array_key_exists('uid', $response["error"])) {
     //loguear al usuario
     $user_name = $form_state->getValue('name');
     $user_pass = trim($form_state->getValue('pass'));
@@ -60,8 +69,10 @@ function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_
     $authentication = \Drupal::service('tienda_autologin.externalauth');
     $response = $authentication->login($user_name, $user_pass);
 
-    $cookie_value = $response['cookie'];
-    $form_state->setValue('current_user_cookie', $cookie_value);
+    if (!empty($response['cookie'])) {
+      $cookie_value = $response['cookie'];
+      $form_state->setValue('current_user_cookie', $cookie_value);
+    }
   
     $session = \Drupal::request()->getSession();
     $session->set('tienda_autologin_user', $cookie_value);
