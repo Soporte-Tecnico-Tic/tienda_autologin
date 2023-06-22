@@ -5,6 +5,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\Entity\Role;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Component\Serialization\Json;
 
 /**
  * Configure example settings for this site.
@@ -71,12 +72,13 @@ class TiendaAutoLoginForm extends ConfigFormBase {
         }
       }
     }
+
     $form['campos_disponibles_usuario_autologin'] = [
       '#type' => 'checkboxes',
       '#title' => t('Campos permitidos en el usuario'),
       '#description' => t('Campos permitidos del usuario que se han de enviar al servicio de microservicio durante el registro'),
       '#options' => $fields_options,
-      '#default_value' => (array) json_decode($config->get('campos_disponibles_usuario_autologin')),
+      '#default_value' => !empty($config->get('campos_disponibles_usuario_autologin')) ? (array) Json::Decode($config->get('campos_disponibles_usuario_autologin')) : [],
       '#required' => TRUE 
     ];
     return parent::buildForm($form, $form_state);
@@ -100,7 +102,7 @@ class TiendaAutoLoginForm extends ConfigFormBase {
       foreach ($keys as $key) {
         $this->config('tienda_autologin.configuration')->set($key, $form_state->getValue($key))->save();
       }
-      $this->config('tienda_autologin.configuration')->set('campos_disponibles_usuario_autologin', json_encode($form_state->getValue('campos_disponibles_usuario_autologin')))->save();
+      $this->config('tienda_autologin.configuration')->set('campos_disponibles_usuario_autologin', Json::Encode($form_state->getValue('campos_disponibles_usuario_autologin')))->save();
     }
   }
 }
