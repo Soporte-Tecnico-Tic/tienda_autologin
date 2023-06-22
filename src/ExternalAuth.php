@@ -142,6 +142,33 @@ class ExternalAuth {
     }
   }
 
+/**
+   * {@inheritdoc}
+   * Obtener la especialidad del usuario por nombre
+   */
+  public function getEspecialidadUser($name_taxonomy, $format = 'json') {
+    try {
+      $response = $this->client->get("{$this->api_url}/rest/especialidades?_format={$format}&name={$name_taxonomy}", [
+        'headers' => [
+          'Accept' => 'application/json', 
+          'Content-Type' => 'application/json'
+        ],
+        'verify' => boolval($this->config->get('certificate_url'))
+      ]);
+
+      $data = Json::Decode($response->getBody()->getContents());
+
+      if (empty($data)) {
+        return FALSE;
+      }
+      else {
+        return $data;
+      }
+    } catch (RequestException $e) {
+      return FALSE;
+    }
+  }
+
   /**
    * {@inheritdoc}
    * Obtener la información del usuario
@@ -200,13 +227,30 @@ class ExternalAuth {
   public function save($values, $format='json') {
     try {
       $fields_values = [];
-      foreach ($values as $id => $value) {
-        if ($field = FieldStorageConfig::loadByName('user', $id)) {
+      foreach ($values as $field_name => $value) {
+        if ($field = FieldStorageConfig::loadByName('user', $field_name)) {
           $campos_reference = ['entity_reference', 'address'];
           $tipo_campo = in_array($field->getType(), $campos_reference) ? 'target_id' : 'value';
-          $fields_values[$id] = [$tipo_campo => $value[0]['value']];
+          if (!is_array($value)) {
+            $fields_values[$field_name] = [$tipo_campo => $value];
+          }
+          else if (!empty($value[$tipo_campo])) {
+            $fields_values[$field_name] = [$tipo_campo => $value[$tipo_campo]];
+          }
+          else if (!empty($value[0][$tipo_campo])) {
+            $fields_values[$field_name] = [$tipo_campo => $value[0][$tipo_campo]];
+
+            if ($field_name == "field_especialidad") {
+              $term_name = \Drupal\taxonomy\Entity\Term::load($value[0][$tipo_campo])->get('name')->value;
+              $especialidad = $this->getEspecialidadUser($term_name);
+              if (!empty($especialidad[0]['tid'])) {
+                $fields_values[$field_name] = [$tipo_campo => $especialidad[0]['tid']];
+              }
+            }
+          }
         }
       }
+
       $fields_values['name'] = ["value" => "{$values['name']}"];
       $fields_values['pass'] = ["value" => "{$values['pass']}"];
       $fields_values['mail'] = ["value" => "{$values['mail']}"];

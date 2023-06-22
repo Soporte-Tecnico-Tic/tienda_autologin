@@ -16,12 +16,11 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
  * Implements hook_form_alter().
  */
 function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
   switch ($form_id) {
     case 'user_register_form':
       $key = array_search('::validateForm', $form['#validate']);
-      $form['#validate'][$key] = 'tienda_autologin_user_register_submit';
-      $form['#validate'][] = '::validateForm';
-
+      array_unshift($form['actions']['submit']['#validate'], 'tienda_autologin_user_register_submit');
       break;
     case 'user_login_form':
       $config =  \Drupal::config('tienda_autologin.configuration');
@@ -45,7 +44,6 @@ function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_
   $config =  \Drupal::config('tienda_autologin.configuration');
 
   $form_state->setValue('name', $form_state->getValue('mail'));
-
   $values = [
     "name" => $form_state->getValue('name'),
     "pass" => $form_state->getValue('pass'),
@@ -53,7 +51,7 @@ function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_
   ];
 
   //enviar los valores de los campos disponibles
-  $campos_disponibles_usuario = (array) json_decode($config->get('campos_disponibles_usuario_autologin'));
+  $campos_disponibles_usuario = (array) Json::Decode($config->get('campos_disponibles_usuario_autologin'));
   foreach ($campos_disponibles_usuario as $field_name => $value) {
     if (!empty($form_state->getValue($value))) {
       $values[$field_name] = $form_state->getValue($value);
