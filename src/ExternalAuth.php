@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\RequestException;
 use Drupal\user\UserInterface;
 use Psr\Log\LoggerInterface;
 use Drupal\Component\Serialization\Json;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Service to handle external authentication logic.
@@ -198,13 +199,20 @@ class ExternalAuth {
    */
   public function save($values, $format='json') {
     try {
+      $fields_values = [];
+      foreach ($values as $id => $value) {
+        if ($field = FieldStorageConfig::loadByName('user', $id)) {
+          $campos_reference = ['entity_reference', 'address'];
+          $tipo_campo = in_array($field->getType(), $campos_reference) ? 'target_id' : 'value';
+          $fields_values[$id] = [$tipo_campo => $value[0]['value']];
+        }
+      }
+      $fields_values['name'] = ["value" => "{$values['name']}"];
+      $fields_values['pass'] = ["value" => "{$values['pass']}"];
+      $fields_values['mail'] = ["value" => "{$values['mail']}"];
+
       $result = $this->client->post("{$this->api_url}/user/register?_format=$format", [
-        'body' => Json::Encode([
-          'name' => ["value" => "{$values['name']}"],
-          'pass' => ["value" => "{$values['pass']}"],
-          'mail' => ["value" => "{$values['mail']}"],
-          //'status' => ["value" => "{$values['status']}"]
-        ]),
+        'body' => Json::Encode($fields_values),
         'headers' => [
           'Accept' => "application/{$format}",
           'Content-Type' => "application/{$format}",
@@ -217,7 +225,7 @@ class ExternalAuth {
       $has_authenticate = false;
       $content['body'] = Json::Decode($result->getBody()->getContents());
       foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
-        if(substr($value_cookie, 0, 4) === "SESS"){
+        if(substr($value_cookie, 0, 4) === "SSES" || substr($value_cookie, 0, 4) === "SESS"){
           $content['cookie'] = $value_cookie;
           $has_authenticate = true;
         }
@@ -265,13 +273,14 @@ class ExternalAuth {
 
       $has_authenticate = false;
       $content['body'] = Json::Decode($result->getBody()->getContents());
+
       foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
-        if(substr($value_cookie, 0, 4) === "SESS"){
+        if(substr($value_cookie, 0, 4) === "SSES" || substr($value_cookie, 0, 4) === "SESS"){
           $content['cookie'] = $value_cookie;
           $has_authenticate = true;
         }
       }
-
+      
       if ($has_authenticate) {
         $cookie = $content['cookie'];
         // Explode the cookie string using a series of semicolons
