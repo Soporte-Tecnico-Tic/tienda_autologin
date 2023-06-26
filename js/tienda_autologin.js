@@ -4,7 +4,7 @@
       let $url_host = drupalSettings.tienda_autologin.redirect_host;
       let $uid = drupalSettings.tienda_autologin.user_external;
 
-      if ($(context).find(".E-enlaces-adicionales-menu .enlace-area a").length && (uid > 0)) {
+      if ($(context).find(".E-enlaces-adicionales-menu .enlace-area a").length && ($uid > 0)) {
         //Ocultar el modal
         $(".modal-load-edit-user-form .close").click(function () {
           $(this).parents('.modal').find('iframe').remove();
