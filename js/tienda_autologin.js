@@ -2,9 +2,9 @@
   Drupal.behaviors.tienda_autologin = {
     attach: function (context, settings) {
       let $url_host = drupalSettings.tienda_autologin.redirect_host;
+      let $uid = drupalSettings.tienda_autologin.user_external;
 
-
-      if ($(context).find(".E-enlaces-adicionales-menu .enlace-area a").length) {
+      if ($(context).find(".E-enlaces-adicionales-menu .enlace-area a").length && (uid > 0)) {
         //Ocultar el modal
         $(".modal-load-edit-user-form .close").click(function () {
           $(this).parents('.modal').find('iframe').remove();
@@ -37,7 +37,6 @@
           $('#modal-load-edit-user-form-auto-login').show();
           $('#modal-load-edit-user-form-auto-login').addClass('modal-edit-user-show');
 
-          let $uid = drupalSettings.tienda_autologin.user_external;
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
           let $url_site = `${$url_host}/user/${$uid}/edit?redirect=${$url_redirect}&autologin=true&op=edituser`;
           
@@ -61,8 +60,8 @@
         }
       });
 
-      if ($(context).find(".user-login-form .more-links .forgot-password-link").length) {
-        $(context).find(".user-login-form .more-links .forgot-password-link").once('mostrar-reset-password-page').click(function(event) {
+      if ($(context).find('a[href*="/usuario/clave"]').length) {
+        $(context).find('a[href*="/usuario/clave"]').once('mostrar-reset-password-page').click(function(event) {
           event.preventDefault();
 
           $('#modal-load-register-form-auto-login').show();
@@ -70,15 +69,14 @@
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_resetpassword);
           let $url_site = `${$url_host}/user/password?redirect=${$url_redirect}&autologin=true&op=resetpassword`;
-          
-          let height = $(window).height() - 100;
+
           $('#modal-load-register-form-auto-login').find('h3').text("Recuperar Contraseña");
-	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_set_password_form" title="Recuperar contraseña del usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
+	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_set_password_form" title="Recuperar contraseña del usuario" width="580" height="450" src="${$url_site}" frameBorder="0"></iframe>`);
         });
       }
 
-      if ($(context).find(".user-login-form .more-links .register-button").length) {
-        $(context).find(".user-login-form .more-links .register-button").once('mostrar-register-page').click(function(event) {
+      if ($(context).find('a[href*="/usuario/registro"]').length) {
+        $(context).find('a[href*="/usuario/registro"]').once('mostrar-register-page').click(function(event) {
           event.preventDefault();
           $('#modal-load-register-form-auto-login').show();
           $('#modal-load-register-form-auto-login').addClass('modal-register-show');
@@ -86,7 +84,7 @@
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_register);
           let $url_site = `${$url_host}/user/register?redirect=${$url_redirect}&autologin=true&op=register`;
 
-          let height = $(window).height() - 100;
+          let height = $(window).height() - 300;
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_register_form" title="Registro de usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
 
         });
