@@ -39,7 +39,6 @@ function tienda_autologin_preprocess(&$variables, $hook) {
     $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = $user_external[0]['uid'][0]['value'];
   }
 
-
   $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_edituser'] = $pagina_ok_edituser;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
@@ -70,6 +69,7 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
           </div>
         </div>
       </div>');
+
       //$form['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
       //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
       //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
