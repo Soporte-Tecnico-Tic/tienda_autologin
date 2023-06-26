@@ -39,7 +39,6 @@ function tienda_autologin_preprocess(&$variables, $hook) {
     $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = $user_external[0]['uid'][0]['value'];
   }
 
-
   $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_edituser'] = $pagina_ok_edituser;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
@@ -70,6 +69,7 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
           </div>
         </div>
       </div>');
+
       //$form['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
       //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
       //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
@@ -147,14 +147,23 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
       $account = User::create();
       foreach ($user_values as $key => $datas) {
         foreach ($datas as $data) {
-          $account->set($key, $data['value']);
+          if (!empty($data['value'])) {
+            $account->set($key, $data['value']);
+          }
         }
       }
-
       $account->enforceIsNew();
+      $account->activate();
       $account->save();
     }
     $form_state->set('uid', $account->id());
+
+    if (!$account->isActive()) {
+      //destroy cookie tienda_autologin_user
+      user_logout();
+
+      return $form_state->setErrorByName('name', t("El usuario no ha sido activado o está bloqueado."));
+    }
   }
   return $form;
 }
@@ -218,5 +227,4 @@ function tienda_autologin_user_logout(AccountInterface $account) {
       $response = new RedirectResponse('user');
       return $response;
     }
-  }
-}
+  }}

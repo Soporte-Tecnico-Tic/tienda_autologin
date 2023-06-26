@@ -46,6 +46,7 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
             }
   
             $account->enforceIsNew();
+            $account->activate();
             $account->save();
             user_login_finalize($account);
           }
