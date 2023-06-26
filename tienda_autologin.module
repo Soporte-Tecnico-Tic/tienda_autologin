@@ -147,14 +147,23 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
       $account = User::create();
       foreach ($user_values as $key => $datas) {
         foreach ($datas as $data) {
-          $account->set($key, $data['value']);
+          if (!empty($data['value'])) {
+            $account->set($key, $data['value']);
+          }
         }
       }
-
       $account->enforceIsNew();
+      $account->activate();
       $account->save();
     }
     $form_state->set('uid', $account->id());
+
+    if (!$account->isActive()) {
+      //destroy cookie tienda_autologin_user
+      user_logout();
+
+      return $form_state->setErrorByName('name', t("El usuario no ha sido activado o está bloqueado."));
+    }
   }
   return $form;
 }
@@ -218,5 +227,4 @@ function tienda_autologin_user_logout(AccountInterface $account) {
       $response = new RedirectResponse('user');
       return $response;
     }
-  }
-}
+  }}

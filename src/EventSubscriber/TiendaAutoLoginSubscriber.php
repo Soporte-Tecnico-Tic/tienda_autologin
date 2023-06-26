@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 
 class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
 
@@ -28,37 +27,30 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
         $response = new TrustedRedirectResponse("/user/login");
         $response->send();
       }
-      else if (\Drupal::currentUser()->isAnonymous()) {
+      else {
         $user_values = $authentication->getCurrentUser($cookie_value);
         $user_values = reset($user_values);
 
         //actualizar la session si el usuario es distinto
-        $email = $user_values['mail'][0]['value'];
-        if ($account = user_load_by_mail($email)) {
-          //update user
-          foreach ($user_values as $key => $datas) {
-            foreach ($datas as $data) {
-              if (!empty($data['value'])) {
+        if (\Drupal::currentUser()->getEmail() != $user_values['mail'][0]['value']) {
+          $email = $user_values['mail'][0]['value'];
+          if ($account = user_load_by_mail($email)) {
+            user_login_finalize($account);
+          }
+          else {
+            $account = User::create();
+            foreach ($user_values as $key => $datas) {
+              foreach ($datas as $data) {
                 $account->set($key, $data['value']);
               }
             }
-          }
-          $account->save();
-          user_login_finalize($account);
-        }
-        else {
-          $account = User::create();
-          foreach ($user_values as $key => $datas) {
-            foreach ($datas as $data) {
-              $account->set($key, $data['value']);
-            }
-          }
   
-          $account->enforceIsNew();
-          $account->activate();
-          $account->save();
-          user_login_finalize($account);
-        }  
+            $account->enforceIsNew();
+            $account->activate();
+            $account->save();
+            user_login_finalize($account);
+          }
+        }
       }
     }
   }
