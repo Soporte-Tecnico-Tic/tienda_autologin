@@ -32,7 +32,7 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
         $user_values = reset($user_values);
 
         //actualizar la session si el usuario es distinto
-        if (\Drupal::currentUser()->getEmail() != $user_values['mail'][0]['value']) {
+        if (\Drupal::currentUser()->isAnonymous()) {
           $email = $user_values['mail'][0]['value'];
           if ($account = user_load_by_mail($email)) {
             user_login_finalize($account);
