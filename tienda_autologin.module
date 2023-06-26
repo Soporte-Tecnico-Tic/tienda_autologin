@@ -32,6 +32,7 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $pagina_host = $config->get('backend_url');
 
   //user external
+  $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = 0;
   if (!empty($_COOKIE['tienda_autologin'])) {
     $cookie_value = $_COOKIE['tienda_autologin'];
     $authentication = \Drupal::service('tienda_autologin.externalauth');
@@ -227,4 +228,5 @@ function tienda_autologin_user_logout(AccountInterface $account) {
       $response = new RedirectResponse('user');
       return $response;
     }
-  }}
+  }
+}
