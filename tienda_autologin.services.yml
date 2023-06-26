@@ -9,8 +9,3 @@ services:
     class: Drupal\tienda_autologin\EventSubscriber\TiendaAutoLoginSubscriber
     tags:
       - {name: event_subscriber}
-  tienda_edituser.event_subscriber:
-    class: Drupal\tienda_autologin\EventSubscriber\UserEditRedirectSubscriber
-    arguments: ['@current_route_match', '@router.route_provider', '@entity_type.manager']
-    tags:
-      - { name: event_subscriber }

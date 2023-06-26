@@ -2,6 +2,7 @@
 namespace Drupal\tienda_autologin\EventSubscriber;
 
 use GuzzleHttp\Exception\RequestException;
+use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
@@ -19,9 +20,12 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
     if (!empty($_COOKIE['tienda_autologin'])) {
       $cookie_value = $_COOKIE['tienda_autologin'];
       $status_user = $this->getLoginStatus($cookie_value);
-  
+
       if (!$status_user) {
         user_logout();
+
+        $response = new TrustedRedirectResponse("/user/login");
+        $response->send();
       }
       else {
         $user_values = $authentication->getCurrentUser($cookie_value);
@@ -65,7 +69,7 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
           'Content-Type' => 'application/json',
           'Cookie' => $cookie_value
         ],
-        'verify' => $url_scheme['scheme'] == 'https' ? true : false
+        'verify' => boolval($config->get('certificate_url'))
       ]);
       $status_user = $response->getBody()->getContents();
       return $status_user;
