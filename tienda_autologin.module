@@ -11,18 +11,70 @@ use Drupal\Component\Serialization\Json;
 use Drupal\user\Entity\User;
 use Drupal\Core\Url;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Render\Markup;
+
+function tienda_autologin_mail_alter(&$message) {
+  //modificar la URL de login reset password
+  if ($message['id'] == 'modulename_messagekey') {
+
+  }
+}
+
+/**
+ * hook_preprocess_page
+ */
+function tienda_autologin_preprocess(&$variables, $hook) {
+  $config =  \Drupal::config('tienda_autologin.configuration');
+
+  $pagina_ok_edituser = $config->get('pagina_ok_edituser');
+  $pagina_ok_autologin = $config->get('pagina_ok_autologin');
+  $pagina_ok_resetpassword = $config->get('pagina_ok_resetpassword');
+  $pagina_host = $config->get('backend_url');
+
+  //user external
+  if (!empty($_COOKIE['tienda_autologin'])) {
+    $cookie_value = $_COOKIE['tienda_autologin'];
+    $authentication = \Drupal::service('tienda_autologin.externalauth');
+    $user_external = $authentication->getCurrentUser($cookie_value);
+    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = $user_external[0]['uid'][0]['value'];
+  }
+
+
+  $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
+  $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_edituser'] = $pagina_ok_edituser;
+  $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
+  $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
+  $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $pagina_host;
+} 
 
 /**
  * Implements hook_form_alter().
  */
 function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-
   switch ($form_id) {
-    case 'user_register_form':
-      $key = array_search('::validateForm', $form['#validate']);
-      array_unshift($form['actions']['submit']['#validate'], 'tienda_autologin_user_register_submit');
-      break;
     case 'user_login_form':
+      //$config =  \Drupal::config('tienda_autologin.configuration');
+
+      $form['more-links']['#suffix'] = Markup::create('<div id="load-register-form-auto-login">
+        <div class="modales modal fade" tabindex="-1" id="modal-load-register-form-auto-login" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <section class="E-espacio-cabecera G-fondo--blanco">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="float:right; padding-right: 25px; margin-top: -10px; box-shadow: none;"></button>
+                <div class="G-max--700 G-margen--auto" style="padding: 44px 20px 120px">
+                  <h3 style="padding-left: 44px; padding-right: 44px; font-weight: bold" class="G-txt--mayus G-txt--cen G-color--primario G-txt--xl G-margen--xxm G-margen--lr-0 G-margen--top-0">Registro del usuario</h3>
+                  <div id="load-register-form-content"></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>');
+      //$form['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
+      //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
+      //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
+      //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $pagina_host;
+
       $config =  \Drupal::config('tienda_autologin.configuration');
       if (@in_array('::validateFinal', $form['#validate'])) {
         if ($config->get('backend_url')) {
@@ -37,53 +89,6 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
 }
 
 /**
- * Registrar el usuario
- */
-function tienda_autologin_user_register_submit(&$form, FormStateInterface $form_state) {
-  $authentication = \Drupal::service('tienda_autologin.externalauth');
-  $config =  \Drupal::config('tienda_autologin.configuration');
-
-  $form_state->setValue('name', $form_state->getValue('mail'));
-  $values = [
-    "name" => $form_state->getValue('name'),
-    "pass" => $form_state->getValue('pass'),
-    "mail" => $form_state->getValue('mail')
-  ];
-
-  //enviar los valores de los campos disponibles
-  $campos_disponibles_usuario = (array) Json::Decode($config->get('campos_disponibles_usuario_autologin'));
-  foreach ($campos_disponibles_usuario as $field_name => $value) {
-    if (!empty($form_state->getValue($value))) {
-      $values[$field_name] = $form_state->getValue($value);
-    }
-  }
-  
-  $response = $authentication->save($values);
-  if (!empty($response["error"]) && array_key_exists('uid', $response["error"])) {
-    //loguear al usuario
-    $user_name = $form_state->getValue('name');
-    $user_pass = trim($form_state->getValue('pass'));
-
-    $response = $authentication->login($user_name, $user_pass); 
-    if (!empty($response['cookie'])) {
-      $cookie_value = $response['cookie'];
-      $form_state->setValue('current_user_cookie', $cookie_value);
-      $session = \Drupal::request()->getSession();
-      $session->set('tienda_autologin_user', $cookie_value);
-  
-      setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
-    }
-  
-    return $form;
-  }
-
-  if (!empty($response["error"])) {
-    $key = key($response["error"]);
-    return $form_state->setErrorByName('name', $response["error"][$key]);
-  }
-}
-
-/**
  * @param $form
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  * @param $form_id
@@ -94,7 +99,7 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
     $user_pass = trim($form_state->getValue('pass'));
 
     $authentication = \Drupal::service('tienda_autologin.externalauth');
-    $response = $authentication->login($user_name, $user_pass);
+    $response = $authentication->login($user_name, $user_pass); 
 
     if (!empty($response["error"])) {
       $key = key($response["error"]);
@@ -167,8 +172,8 @@ function tienda_autologin_user_login($account) {
   if (!empty($cookie_value)) {
     $host = \Drupal::request()->getSchemeAndHttpHost();
     $host = urlencode($host);
-  
-    $homeResponse = new RedirectResponse("{$api_url}/tienda/synclogin/{$cookie_value}?redirect={$host}");
+
+    $homeResponse = new RedirectResponse("{$api_url}/tienda/synclogin/{$cookie_value}?redirect={$host}&autologin=login");
     return $homeResponse->send();
   }
 }
@@ -200,9 +205,6 @@ function tienda_autologin_user_logout(AccountInterface $account) {
         //destroy cookie tienda_autologin_user
         setcookie('tienda_autologin', '', \Drupal::time()->getRequestTime() - 3600, '/');
         unset($_COOKIE['tienda_autologin']);
-  
-       // $session = \Drupal::request()->getSession();
-       // $session->remove('tienda_autologin_user');
       }
     } catch (RequestException $e) {
       if (!$e->hasResponse()) {
