@@ -73,14 +73,29 @@ class TiendaAutoLoginForm extends ConfigFormBase {
       }
     }
 
-    $form['campos_disponibles_usuario_autologin'] = [
-      '#type' => 'checkboxes',
-      '#title' => t('Campos permitidos en el usuario'),
-      '#description' => t('Campos permitidos del usuario que se han de enviar al servicio de microservicio durante el registro'),
-      '#options' => $fields_options,
-      '#default_value' => !empty($config->get('campos_disponibles_usuario_autologin')) ? (array) Json::Decode($config->get('campos_disponibles_usuario_autologin')) : [],
-      '#required' => TRUE 
-    ];
+    $form['pagina_ok_autologin'] = array(
+      '#title' => t('Url de pagina OK'),
+      '#type' => 'textfield',
+      '#description' => t('Url de la pagina OK que se ha de mostrar durante el registro, por ejemplo /mi-sitio-pagina-ok'),
+      '#required' => TRUE,
+      '#default_value' => $config->get('pagina_ok_autologin')
+    );
+
+    $form['pagina_ok_resetpassword'] = array(
+      '#title' => t('Url de pagina OK reset password'),
+      '#type' => 'textfield',
+      '#description' => t('Url de la pagina OK que se ha de mostrar luego del reset password, por ejemplo /mi-sitio-pagina-ok'),
+      '#required' => TRUE,
+      '#default_value' => $config->get('pagina_ok_resetpassword')
+    );
+
+    $form['pagina_ok_edituser'] = array(
+      '#title' => t('Url de pagina OK de editar usuario'),
+      '#type' => 'textfield',
+      '#description' => t('Url de la pagina OK que se ha de mostrar luego del editar el usuario, por ejemplo /mi-sitio-pagina-ok'),
+      '#required' => TRUE,
+      '#default_value' => $config->get('pagina_ok_edituser')
+    );
     return parent::buildForm($form, $form_state);
   }
 
@@ -95,14 +110,16 @@ class TiendaAutoLoginForm extends ConfigFormBase {
       $keys = [
         'backend_url',
         'roles_exclude',
-        'certificate_url'
+        'certificate_url',
+        'pagina_ok_autologin',
+        'pagina_ok_resetpassword',
+        'pagina_ok_edituser'
       ];
 
       //set values
       foreach ($keys as $key) {
         $this->config('tienda_autologin.configuration')->set($key, $form_state->getValue($key))->save();
       }
-      $this->config('tienda_autologin.configuration')->set('campos_disponibles_usuario_autologin', Json::Encode($form_state->getValue('campos_disponibles_usuario_autologin')))->save();
     }
   }
 }
