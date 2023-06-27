@@ -22,7 +22,7 @@
           </div>
         </div>`);
 
-        $(context).find(".E-enlaces-adicionales-menu .enlace-area a").once('mostrar-edit-user-page').click(function(event) {
+        $(context).find(".E-enlaces-adicionales-menu .enlace-area.enlace-editar-perfil a").once('mostrar-edit-user-page').click(function(event) {
           event.preventDefault();
           $('#modal-load-edit-user-form-auto-login').show();
           $('#modal-load-edit-user-form-auto-login').addClass('modal-edit-user-show show');
