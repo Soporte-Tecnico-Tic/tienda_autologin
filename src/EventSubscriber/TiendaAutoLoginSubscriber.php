@@ -28,31 +28,6 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
         $response = new TrustedRedirectResponse("/user/login");
         $response->send();
       }
-      else {
-        $user_values = $authentication->getCurrentUser($cookie_value);
-        $user_values = reset($user_values);
-
-        //actualizar la session si el usuario es distinto
-        if (\Drupal::currentUser()->isAnonymous()) {
-          $email = $user_values['mail'][0]['value'];
-          if ($account = user_load_by_mail($email)) {
-            user_login_finalize($account);
-          }
-          else {
-            $account = User::create();
-            foreach ($user_values as $key => $datas) {
-              foreach ($datas as $data) {
-                $account->set($key, $data['value']);
-              }
-            }
-  
-            $account->enforceIsNew();
-            $account->activate();
-            $account->save();
-            user_login_finalize($account);
-          }
-        }
-      }
     }
   }
 

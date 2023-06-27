@@ -32,12 +32,10 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $pagina_host = $config->get('backend_url');
 
   //user external
+  $session = \Drupal::request()->getSession();
   $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = 0;
-  if (!empty($_COOKIE['tienda_autologin'])) {
-    $cookie_value = $_COOKIE['tienda_autologin'];
-    $authentication = \Drupal::service('tienda_autologin.externalauth');
-    $user_external = $authentication->getCurrentUser($cookie_value);
-    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = $user_external[0]['uid'][0]['value'];
+  if ($user_external_uid = $session->get('tienda_autologin_user_external', null)) {
+    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = $user_external_uid;
   }
 
   $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
@@ -53,8 +51,6 @@ function tienda_autologin_preprocess(&$variables, $hook) {
 function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   switch ($form_id) {
     case 'user_login_form':
-      //$config =  \Drupal::config('tienda_autologin.configuration');
-
       $form['more-links']['#suffix'] = Markup::create('<div id="load-register-form-auto-login">
         <div class="modales modal fade" tabindex="-1" id="modal-load-register-form-auto-login" aria-hidden="true">
           <div class="modal-dialog">
@@ -70,11 +66,6 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
           </div>
         </div>
       </div>');
-
-      //$form['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
-      //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
-      //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
-      //$form['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $pagina_host;
 
       $config =  \Drupal::config('tienda_autologin.configuration');
       if (@in_array('::validateFinal', $form['#validate'])) {
@@ -117,6 +108,7 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
 
     $session = \Drupal::request()->getSession();
     $session->set('tienda_autologin_user', $cookie_value);
+    $session->set('tienda_autologin_user_external', $uid);
     setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
   }
 }
@@ -167,25 +159,6 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
     }
   }
   return $form;
-}
-
-/**
- * Implements hook_user_login().
- */
-function tienda_autologin_user_login($account) {
-  $config =  \Drupal::config('tienda_autologin.configuration');
-  $api_url = $config->get('backend_url');
-
-  $session = \Drupal::request()->getSession();
-  $cookie_value = $session->get('tienda_autologin_user', null);
-
-  if (!empty($cookie_value)) {
-    $host = \Drupal::request()->getSchemeAndHttpHost();
-    $host = urlencode($host);
-
-    $homeResponse = new RedirectResponse("{$api_url}/tienda/synclogin/{$cookie_value}?redirect={$host}&autologin=login");
-    return $homeResponse->send();
-  }
 }
 
 /**
