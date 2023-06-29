@@ -18,7 +18,7 @@
 }
 .modal.show {
   display: flex !important;
-  background-color: rgba(250, 250, 250, 0.85);
+  background-color: rgba(0, 0, 0, 0.8);
 }
 .modal .modal-dialog {
   max-width: 650px;

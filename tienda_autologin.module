@@ -13,13 +13,6 @@ use Drupal\Core\Url;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Render\Markup;
 
-function tienda_autologin_mail_alter(&$message) {
-  //modificar la URL de login reset password
-  if ($message['id'] == 'modulename_messagekey') {
-
-  }
-}
-
 /**
  * hook_preprocess_page
  */
@@ -33,9 +26,11 @@ function tienda_autologin_preprocess(&$variables, $hook) {
 
   //user external
   $session = \Drupal::request()->getSession();
-  $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = 0;
-  if ($user_external_uid = $session->get('tienda_autologin_user_external', null)) {
-    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external'] = $user_external_uid;
+  $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['uid'] = 0;
+  if ($user_external_uid = $session->get('tienda_autologin_external_uid', null)) {
+    $user_external_has = $session->get('tienda_autologin_external_cookie', null);
+    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['has'] = $user_external_has;
+    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['uid'] = $user_external_uid;
   }
 
   $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
@@ -43,7 +38,7 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $pagina_host;
-} 
+}
 
 /**
  * Implements hook_form_alter().
@@ -58,7 +53,6 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
               <section class="E-espacio-cabecera G-fondo--blanco">
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="float:right; padding-right: 25px; margin-top: -10px; box-shadow: none;"></button>
                 <div class="G-max--700 G-margen--auto" style="padding: 44px 20px 120px">
-                  <h3 style="padding-left: 44px; padding-right: 44px; font-weight: bold" class="G-txt--mayus G-txt--cen G-color--primario G-txt--xl G-margen--xxm G-margen--lr-0 G-margen--top-0">Registro del usuario</h3>
                   <div id="load-register-form-content"></div>
                 </div>
               </section>
@@ -98,18 +92,20 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
       return $form_state->setErrorByName('name', $response["error"][$key]);
     }
 
-    $cookie_value = $response['cookie'];
+    if (!empty($response['cookie'])) {
+      $cookie_value = $response['cookie'];
 
-    $content_user = $response['body'];
-    $uid = $content_user['current_user']['uid'];
-
-    $form_state->setValue('current_user_uid', $uid);
-    $form_state->setValue('current_user_cookie', $cookie_value);
-
-    $session = \Drupal::request()->getSession();
-    $session->set('tienda_autologin_user', $cookie_value);
-    $session->set('tienda_autologin_user_external', $uid);
-    setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
+      $content_user = $response['body'];
+      $uid = $content_user['current_user']['uid'];
+  
+      $form_state->setValue('current_user_uid', $uid);
+      $form_state->setValue('current_user_cookie', $cookie_value);
+  
+      $session = \Drupal::request()->getSession();
+      $session->set('tienda_autologin_external_cookie', $cookie_value);
+      $session->set('tienda_autologin_external_uid', $uid);
+      setcookie('tienda_autologin', $cookie_value, time() + 86400, '/');
+    }
   }
 }
 
