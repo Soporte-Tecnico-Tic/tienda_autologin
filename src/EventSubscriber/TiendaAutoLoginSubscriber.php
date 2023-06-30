@@ -18,16 +18,9 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
     $config =  \Drupal::config('tienda_autologin.configuration');
     $authentication = \Drupal::service('tienda_autologin.externalauth');
 
-    if (!empty($_COOKIE['tienda_autologin'])) {
-      $cookie_value = $_COOKIE['tienda_autologin'];
-      $status_user = $this->getLoginStatus($cookie_value);
-
-      if (!$status_user) {
-        user_logout();
-
-        $response = new TrustedRedirectResponse("/user/login");
-        $response->send();
-      }
+    $op_edit_usuario_extenal = \Drupal::request()->query->get('op_edit_usuario_extenal');
+    if (!empty($op_edit_usuario_extenal)) {
+      \Drupal::messenger()->addMessage(t('Se guardaron los datos del usuario con exito'));
     }
   }
 
