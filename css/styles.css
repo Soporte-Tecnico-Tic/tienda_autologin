@@ -21,7 +21,7 @@
   background-color: rgba(0, 0, 0, 0.8);
 }
 .modal .modal-dialog {
-  max-width: 650px;
+  max-width: 580px !important;
   margin: auto;
   padding: 44px 20px;
   position: static;
