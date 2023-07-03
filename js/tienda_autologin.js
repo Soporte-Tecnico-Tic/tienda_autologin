@@ -48,7 +48,7 @@
         $("#modal-load-edit-user-form-auto-login").find('.close').once('modal-load-edit-user-form-auto-login-close').click(function () {        
           $(this).parents('.modal').find('iframe').remove();
           $('#modal-load-edit-user-form-auto-login').hide();
-        
+
           if ($('#modal-load-edit-user-form-auto-login').hasClass('modal-edit-user-show')) {
             $('#modal-load-edit-user-form-auto-login').removeClass('modal-edit-user-show show');
           }
