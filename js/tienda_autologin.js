@@ -10,7 +10,7 @@
 
       if ($(context).find(".E-enlaces-adicionales-menu .enlace-area a").length && ($uid > 0)) {
         //Ocultar el modal
-/*        $("main").once("add-modal-content-edit-user").prepend(`<div class='modal-load-edit-user-form'>
+        $("main").once("add-modal-content-edit-user").prepend(`<div class='modal-load-edit-user-form'>
           <div class="modales modal fade" tabindex="-1" id="modal-load-edit-user-form-auto-login" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -24,16 +24,11 @@
             </div>
           </div>
         </div>`);
-*/
+
         $(context).find(".E-enlaces-adicionales-menu .enlace-area.enlace-editar-perfil a").once('mostrar-edit-user-page').click(function(event) {
           event.preventDefault();
-          let $url_site = `${$url_host}/userautenticacion/${$has}/edituser?redirect=${$url_redirect}&autologin=login&redirect_external=${$url_host_external}`;
-          $(this).attr('href', $url_site);
-          window.open(this.href);
-
-
-       /* $('#modal-load-edit-user-form-auto-login').show();
-         $('#modal-load-edit-user-form-auto-login').addClass('modal-edit-user-show show');
+          $('#modal-load-edit-user-form-auto-login').show();
+          $('#modal-load-edit-user-form-auto-login').addClass('modal-edit-user-show show');
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
           $has = encodeURIComponent($has);
@@ -42,7 +37,6 @@
           let height = $(window).height();
           $('#modal-load-edit-user-form-auto-login').find('h3').text("Editar Usuario");
 	      $('#modal-load-edit-user-form-auto-login').find("#load-edit-user-form-content").prepend(`<iframe id="iframe_set_password_form" title="Editar usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
-	      */
         });
         
         $("#modal-load-edit-user-form-auto-login").find('.close').once('modal-load-edit-user-form-auto-login-close').click(function () {        
