@@ -71,7 +71,7 @@
           $('#modal-load-register-form-auto-login').addClass('modal-reset-password-show show');
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_resetpassword);
-          let $url_site = `${$url_host}/user/password?redirect=${$url_redirect}&autologin=true&op=resetpassword`;
+          let $url_site = `${$url_host}/user/password?destination=${$url_redirect}&autologin=true&op=resetpassword`;
 
           $('#modal-load-register-form-auto-login').find('h3').text("Recuperar Contraseña");
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_set_password_form" title="Recuperar contraseña del usuario" width="580" height="450" src="${$url_site}" frameBorder="0"></iframe>`);
