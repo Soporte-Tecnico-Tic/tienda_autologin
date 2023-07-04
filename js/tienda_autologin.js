@@ -17,6 +17,7 @@
                 <section class="E-espacio-cabecera G-fondo--blanco">
                   <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="float:right; padding-right: 25px; margin-top: -10px; box-shadow: none;"></button>
                   <div class="G-max--700 G-margen--auto" style="padding: 44px 20px 120px">
+                    <h3 style="padding-left: 44px; padding-right: 44px; font-weight: bold" class="G-txt--mayus G-txt--cen G-color--primario G-txt--xl G-margen--xxm G-margen--lr-0 G-margen--top-0">Editar usuario</h3>
                     <div id="load-edit-user-form-content"></div>
                   </div>
                 </section>
@@ -25,6 +26,7 @@
           </div>
         </div>`);
 
+
         $(context).find(".E-enlaces-adicionales-menu .enlace-area.enlace-editar-perfil a").once('mostrar-edit-user-page').click(function(event) {
           event.preventDefault();
           $('#modal-load-edit-user-form-auto-login').show();
@@ -32,7 +34,7 @@
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
           $has = encodeURIComponent($has);
-          let $url_site = `${$url_host}/userautenticacion/${$has}/edituser?redirect=${$url_redirect}`;
+          let $url_site = `${$url_host}/userautenticacion/${$has}/edituser?redirect=${$url_redirect}&autologin=login`;
           
           let height = $(window).height();
           $('#modal-load-edit-user-form-auto-login').find('h3').text("Editar Usuario");
