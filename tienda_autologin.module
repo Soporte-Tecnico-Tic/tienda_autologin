@@ -19,12 +19,17 @@ use Drupal\Core\Render\Markup;
 function tienda_autologin_preprocess(&$variables, $hook) {
   $config =  \Drupal::config('tienda_autologin.configuration');
 
+  if ($mensaje_externo_sync = \Drupal::request()->query->get('mensaje_externo_sync')) {
+    $variables['mensaje_externo_sync'] = t('La contraseña del usuario fue modificada con exito');
+  }
+
   $pagina_ok_edituser = $config->get('pagina_ok_edituser');
   $pagina_ok_autologin = $config->get('pagina_ok_autologin');
   $pagina_ok_resetpassword = $config->get('pagina_ok_resetpassword');
   $pagina_host = $config->get('backend_url');
 
   $current_url = \Drupal::request()->getUri();
+  $url_host = \Drupal::request()->getSchemeAndHttpHost();
 
   //user external
   $session = \Drupal::request()->getSession();
@@ -41,6 +46,7 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_edituser'] = $pagina_ok_edituser;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_register'] = $pagina_ok_autologin;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_resetpassword'] = $pagina_ok_resetpassword;
+  $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_siteexternal'] = $url_host;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $pagina_host;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host_external'] = $current_url;
 
@@ -176,9 +182,8 @@ function tienda_autologin_user_logout(AccountInterface $account) {
   $format = 'json';
   if (!empty($api_url)) {
     try {
-      if (!empty($_COOKIE['tienda_autologin'])) {
-        $cookie_value = $_COOKIE['tienda_autologin'];
-
+      $session = \Drupal::request()->getSession();
+      if ($cookie_value = $session->get('tienda_autologin_external_cookie', null)) {
         $client = \Drupal::httpClient();
         $response = $client->get("{$api_url}/user/logout?_format={$format}", [
           'headers' => [
@@ -189,7 +194,7 @@ function tienda_autologin_user_logout(AccountInterface $account) {
           'verify' => boolval($config->get('certificate_url'))
         ]);
         $response = $response->getBody()->getContents();
-    
+
         //destroy cookie tienda_autologin_user
         setcookie('tienda_autologin', '', \Drupal::time()->getRequestTime() - 3600, '/');
         unset($_COOKIE['tienda_autologin']);
