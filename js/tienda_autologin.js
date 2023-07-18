@@ -8,7 +8,42 @@
       let $has = drupalSettings.tienda_autologin.user_external.has_external;
       let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
 
-      if ($(context).find(".E-enlaces-adicionales-menu .enlace-area a").length && ($uid > 0)) {
+      var params = new window.URLSearchParams(window.location.search);
+      if (params.get('mensaje_externo_sync') == 'resetpassword') {
+        $("main").once("add-modal-content-pass-user").prepend(`<div class='modal-message-pass-user-form'>
+          <div class="modales modal fade" tabindex="-1" id="modal-message-pass-form-auto-login" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <section class="E-espacio-cabecera G-fondo--blanco">
+                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="float:right; padding-right: 25px; margin-top: -10px; box-shadow: none;"></button>
+                  <div class="G-max--700 G-margen--auto" style="padding: 44px 20px 120px">
+                    <div id="load-message-user-pass-form-content">
+                      <h3 class="G-color--primario G-txt--xxxm G-txt--negrita G-txt--cen">${Drupal.t("La contraseña fue modificada con exito")}</h3>
+                      <ul class="G-listado G-flex G-flex-v--cen E-enlaces-adicionales-menu">
+                        <li class="enlace-area" style="margin: auto">
+                          <a href="/user/login" style="border: 2px solid #296aa5; background-color: #296aa5; color: white; cursor: pointer; text-decoration: none; border-radius: 50px; padding: 7px 14px; line-height: 1;">${Drupal.t("Área usuarios")}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>`);
+        $('#modal-message-pass-form-auto-login').show();
+        $('#modal-message-pass-form-auto-login').addClass('modal-password-show show');
+
+        $("#modal-message-pass-form-auto-login").find('.close').once('modal-load-pass-user-form-auto-login-close').click(function () {
+          $('#modal-message-pass-form-auto-login').hide();
+
+          if ($('#modal-message-pass-form-auto-login').hasClass('modal-password-show')) {
+            $('#modal-message-pass-form-auto-login').removeClass('modal-password-show show');
+          }
+        });
+      }
+
+      if ($(context).find(".E-enlaces-adicionales-menu .enlace-editar-perfil a").length && ($uid > 0)) {
         //Ocultar el modal
         $("main").once("add-modal-content-edit-user").prepend(`<div class='modal-load-edit-user-form'>
           <div class="modales modal fade" tabindex="-1" id="modal-load-edit-user-form-auto-login" aria-hidden="true">
@@ -72,7 +107,8 @@
           $('#modal-load-register-form-auto-login').addClass('modal-reset-password-show show');
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_resetpassword);
-          let $url_site = `${$url_host}/user/password?destination=${$url_redirect}&autologin=true&op=resetpassword`;
+          let $redirect_external = encodeURIComponent(drupalSettings.tienda_autologin.redirect_siteexternal);
+          let $url_site = `${$url_host}/user/password?destination=${$url_redirect}&redirect_external=${$redirect_external}&autologin=login&op=resetpassword`;
 
           $('#modal-load-register-form-auto-login').find('h3').text("Recuperar Contraseña");
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_set_password_form" title="Recuperar contraseña del usuario" width="580" height="450" src="${$url_site}" frameBorder="0"></iframe>`);
