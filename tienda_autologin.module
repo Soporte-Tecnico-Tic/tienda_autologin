@@ -150,6 +150,9 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
           if (!empty($data['value'])) {
             $account->set($key, $data['value']);
           }
+          if (!empty($data['target_id'])) {
+            $account->set($key, $data['target_id']);
+          }
           if ($key == 'created' || $key == 'changed') {
             $account->set($key, strtotime($data['value']));
           }
