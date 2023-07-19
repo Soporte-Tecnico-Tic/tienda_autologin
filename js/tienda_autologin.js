@@ -15,7 +15,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
-                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="float:right; padding-right: 25px; margin-top: -10px; box-shadow: none;"></button>
+                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="margin-right: 60px;"></button>
                   <div class="G-max--700 G-margen--auto" style="padding: 44px 20px 120px">
                     <div id="load-message-user-pass-form-content">
                       <h3 class="G-color--primario G-txt--xxxm G-txt--negrita G-txt--cen">${Drupal.t("La contraseña fue modificada con exito")}</h3>
@@ -33,7 +33,7 @@
         </div>`);
         $('#modal-message-pass-form-auto-login').show();
         $('#modal-message-pass-form-auto-login').addClass('modal-password-show show');
-
+        
         $("#modal-message-pass-form-auto-login").find('.close').once('modal-load-pass-user-form-auto-login-close').click(function () {
           $('#modal-message-pass-form-auto-login').hide();
 
@@ -50,7 +50,7 @@
             <div class="modal-dialog">
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
-                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="float:right; padding-right: 25px; margin-top: -10px; box-shadow: none;"></button>
+                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="margin-right: -20px;"></button>
                   <div class="G-max--700 G-margen--auto" style="padding: 44px 20px 120px">
                     <div id="load-edit-user-form-content"></div>
                   </div>
