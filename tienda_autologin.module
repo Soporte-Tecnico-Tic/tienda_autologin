@@ -37,7 +37,7 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   //user external
   $session = \Drupal::request()->getSession();
   $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['uid'] = 0;
-  if ($user_external_uid = $session->get('tienda_autologin_external_uid', null)) {
+  if ($user_external_uid = $session->get('tienda_autologin_external_uid', null) && ($user->id() > 0)) {
     $user_external_has = $session->get('tienda_autologin_external_cookie', null);
     $user_external_has = urlencode(base64_encode(str_replace("%SSES%", "TIAUTOLOGIN", $user_external_has)));
 
@@ -50,7 +50,6 @@ function tienda_autologin_preprocess(&$variables, $hook) {
       \Drupal::logger('tienda_autologin')->notice("has_external: " . print_r($user_external_has, 1));
 
     }
-
   }
 
   $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
@@ -89,10 +88,17 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
       $config =  \Drupal::config('tienda_autologin.configuration');
       if (@in_array('::validateFinal', $form['#validate'])) {
         if ($config->get('backend_url')) {
-          $key = array_search('::validateFinal', $form['#validate']);
-          $form['#validate'][$key] = 'tienda_autologin_auth_authenticate';
+          $key1 = array_search('::validateFinal', $form['#validate']);
+          $key2 = array_search('::validateAuthentication', $form['#validate']);
+
+          $form['#validate'][$key1] = 'tienda_autologin_auth_authenticate';
+          unset($form['#validate'][$key2]);
+
           $form['#validate'][] = 'tienda_autologin_get_account';
           $form['#validate'][] = '::validateFinal';
+
+          $form['#validate'][] = '::validateFinal';
+
           if ($config->get('debug_site_autologin')) {
             \Drupal::logger('tienda_autologin')->notice("validate: " . print_r($form['#validate'], 1));
           }
@@ -154,6 +160,10 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
 
   //auto login
   $status_user = $authentication->getLoginStatus($cookie_value);
+  if ($config->get('debug_site_autologin')) {
+    \Drupal::logger('tienda_autologin')->notice("response status user: " . print_r($status_user, 1));
+  }
+
   if ($status_user) {
     $uid = $form_state->getValue('current_user_uid');
     $user_values = $authentication->getUser($cookie_value, $uid);
