@@ -5,6 +5,7 @@
       let $url_host_external = drupalSettings.tienda_autologin.redirect_host_external;
       $url_host_external = encodeURIComponent($url_host_external);
       let $uid = drupalSettings.tienda_autologin.user_external.uid;
+      let $uuid = drupalSettings.tienda_autologin.user_external.uuid;
       let $has = drupalSettings.tienda_autologin.user_external.has_external;
       let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
 
@@ -68,7 +69,7 @@
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
           $has = encodeURIComponent($has);
-          let $url_site = `${$url_host}/userautenticacion/${$has}/edituser?redirect=${$url_redirect}&autologin=login`;
+          let $url_site = `${$url_host}/userautenticacion/${$has}/${$uuid}/edituser?redirect=${$url_redirect}&autologin=login`;
           
           let height = $(window).height();
           $('#modal-load-edit-user-form-auto-login').find('h3').text("Editar Usuario");

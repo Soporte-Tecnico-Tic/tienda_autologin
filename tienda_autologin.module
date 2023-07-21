@@ -19,6 +19,9 @@ use Drupal\Core\Render\Markup;
 function tienda_autologin_preprocess(&$variables, $hook) {
   $config =  \Drupal::config('tienda_autologin.configuration');
 
+  $current_user = \Drupal::currentUser();
+  $user = User::load($current_user->id());
+
   if ($mensaje_externo_sync = \Drupal::request()->query->get('mensaje_externo_sync')) {
     $variables['mensaje_externo_sync'] = t('La contraseña del usuario fue modificada con exito');
   }
@@ -40,6 +43,14 @@ function tienda_autologin_preprocess(&$variables, $hook) {
 
     $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['has_external'] = $user_external_has;
     $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['uid'] = $user_external_uid;
+    $variables['#attached']['drupalSettings']['tienda_autologin']['user_external']['uuid'] = $user->uuid();
+
+    if ($config->get('debug_site_autologin')) {
+      \Drupal::logger('tienda_autologin')->notice("uuid: " . print_r($user->uuid(), 1));
+      \Drupal::logger('tienda_autologin')->notice("has_external: " . print_r($user_external_has, 1));
+
+    }
+
   }
 
   $variables['#attached']['library'][] = 'tienda_autologin/tienda_autologin';
@@ -56,6 +67,8 @@ function tienda_autologin_preprocess(&$variables, $hook) {
  * Implements hook_form_alter().
  */
 function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config =  \Drupal::config('tienda_autologin.configuration');
+
   switch ($form_id) {
     case 'user_login_form':
       $form['more-links']['#suffix'] = Markup::create('<div id="load-register-form-auto-login">
@@ -80,6 +93,9 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
           $form['#validate'][$key] = 'tienda_autologin_auth_authenticate';
           $form['#validate'][] = 'tienda_autologin_get_account';
           $form['#validate'][] = '::validateFinal';
+          if ($config->get('debug_site_autologin')) {
+            \Drupal::logger('tienda_autologin')->notice("validate: " . print_r($form['#validate'], 1));
+          }
         }
       }
       break;
@@ -92,13 +108,18 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
  * @param $form_id
  */
 function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_state) {
+  $config =  \Drupal::config('tienda_autologin.configuration');
+
   if (!$form_state->get('uid')) {
     $user_name = $form_state->getValue('name');
     $user_pass = trim($form_state->getValue('pass'));
 
     $authentication = \Drupal::service('tienda_autologin.externalauth');
     $response = $authentication->login($user_name, $user_pass); 
-
+    if ($config->get('debug_site_autologin')) {
+      \Drupal::logger('tienda_autologin')->notice("response login: " . print_r($response, 1));
+    }
+    
     if (!empty($response["error"])) {
       $key = key($response["error"]);
       return $form_state->setErrorByName('name', $response["error"][$key]);
@@ -126,6 +147,8 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
  * @param $form_id
  */
 function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
+  $config =  \Drupal::config('tienda_autologin.configuration');
+
   $authentication = \Drupal::service('tienda_autologin.externalauth');
   $cookie_value = $form_state->getValue('current_user_cookie');
 
@@ -134,7 +157,9 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
   if ($status_user) {
     $uid = $form_state->getValue('current_user_uid');
     $user_values = $authentication->getUser($cookie_value, $uid);
-
+    if ($config->get('debug_site_autologin')) {
+      \Drupal::logger('tienda_autologin')->notice("response get user: " . print_r($user_values, 1));
+    }
     //destroy values
     unset($user_values['uid']);
     unset($user_values['uuid']);
@@ -197,7 +222,9 @@ function tienda_autologin_user_logout(AccountInterface $account) {
           'verify' => boolval($config->get('certificate_url'))
         ]);
         $response = $response->getBody()->getContents();
-
+        if ($config->get('debug_site_autologin')) {
+          \Drupal::logger('tienda_autologin')->notice("response get user: " . print_r($response, 1));
+        }
         //destroy cookie tienda_autologin_user
         setcookie('tienda_autologin', '', \Drupal::time()->getRequestTime() - 3600, '/');
         unset($_COOKIE['tienda_autologin']);

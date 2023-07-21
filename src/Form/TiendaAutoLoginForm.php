@@ -64,6 +64,13 @@ class TiendaAutoLoginForm extends ConfigFormBase {
       '#default_value' => $config->get('certificate_url')
     ];
 
+    $form['debug_site_autologin'] = [
+      '#type' => 'radios',
+      '#title' => t('Guardar logs para debug del sitio'),
+      '#options' => [true => t("SI"), false => t('NO')],
+      '#default_value' => $config->get('debug_site_autologin')
+    ];
+
     //$fields_options = [0 => t('Ninguno')];
     if ($all_bundle_fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('user', 'user')) {
       foreach ($all_bundle_fields as $field_name => $field) {
@@ -111,6 +118,7 @@ class TiendaAutoLoginForm extends ConfigFormBase {
         'backend_url',
         'roles_exclude',
         'certificate_url',
+        'debug_site_autologin',
         'pagina_ok_autologin',
         'pagina_ok_resetpassword',
         'pagina_ok_edituser'
