@@ -118,13 +118,14 @@ class ExternalAuth {
    * {@inheritdoc}
    * Obtener la información del usuario
    */
-  public function getCurrentUser($cookie_value, $format = 'json') {
+  public function getCurrentUser($access_token_external, $format = 'json') {
     try {
       $response = $this->client->get("{$this->api_url}/current-user?_format={$format}", [
         'headers' => [
           'Accept' => 'application/json', 
           'Content-Type' => 'application/json',
-          'Cookie' => $cookie_value
+          'Authorization' => "Bearer {$access_token_external}",
+          'cache-control' => 'no-cache'
         ],
         'verify' => boolval($this->config->get('certificate_url'))
       ]);
@@ -146,13 +147,14 @@ class ExternalAuth {
    * {@inheritdoc}
    * Obtener la información del usuario
    */
-  public function getUser($cookie_value, $user_uid, $format = 'json') {
+  public function getUser($access_token_external, $user_uid, $format = 'json') {
     try {
       $response = $this->client->get("{$this->api_url}/user/{$user_uid}?_format={$format}", [
         'headers' => [
           'Accept' => 'application/json', 
           'Content-Type' => 'application/json',
-          'Cookie' => $cookie_value
+          'Authorization' => "Bearer {$access_token_external}",
+          'cache-control' => 'no-cache'
         ],
         'verify' => boolval($this->config->get('certificate_url'))
       ]);
@@ -180,12 +182,13 @@ class ExternalAuth {
    * @return string
    *   The URL string.
    */
-  public function getLoginStatus($cookie_value, $format = 'json') {
+  public function getLoginStatus($access_token_external, $format = 'json') {
     $response = $this->client->get("{$this->api_url}/user/login_status?_format={$format}", [
       'headers' => [
         'Accept' => 'application/json', 
         'Content-Type' => 'application/json',
-        'Cookie' => $cookie_value
+        'Authorization' => "Bearer {$access_token_external}",
+        'cache-control' => 'no-cache'
       ],
       'verify' => boolval($this->config->get('certificate_url'))
       ]);
@@ -216,18 +219,7 @@ class ExternalAuth {
       $has_authenticate = false;
       $content['body'] = Json::Decode($result->getBody()->getContents());
 
-      foreach ($result->getHeader('Set-Cookie') as $value_cookie) {
-        if(substr($value_cookie, 0, 4) === "SSES" || substr($value_cookie, 0, 4) === "SESS"){
-          $content['cookie'] = $value_cookie;
-          $has_authenticate = true;
-        }
-      }
-
-      if ($has_authenticate) {
-        $cookie = $content['cookie'];
-        // Explode the cookie string using a series of semicolons
-        $pieces = array_filter(array_map('trim', explode(';', $cookie)));
-        $content['cookie'] = $pieces[0];
+      if (!empty($content['body']) && !empty($content['body']['access_token'])) {
         return $content;
       }
       else {
