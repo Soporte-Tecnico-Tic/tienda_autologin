@@ -7,3 +7,10 @@ tienda_autologin.settings_form:
     _permission: 'administer site configuration'
   options:
     _admin_route: TRUE
+tienda_autologin.redirectite:
+  path: '/tienda_autologin/redirect'
+  defaults:
+    _controller: '\Drupal\tienda_autologin\Controller\TiendaAutologinController::RedirectSiteExternal'
+    _title: 'Redirigir sitio external'
+  requirements:
+    _permission: 'access content'

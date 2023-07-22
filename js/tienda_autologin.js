@@ -3,10 +3,7 @@
     attach: function (context, settings) {
       let $url_host = drupalSettings.tienda_autologin.redirect_host;
       let $url_host_external = drupalSettings.tienda_autologin.redirect_host_external;
-      $url_host_external = encodeURIComponent($url_host_external);
-      let $uid = drupalSettings.tienda_autologin.user_external.uid;
-      let $uuid = drupalSettings.tienda_autologin.user_external.uuid;
-      let $has = drupalSettings.tienda_autologin.user_external.has_external;
+      //$url_host_external = encodeURIComponent($url_host_external);
       let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
 
       var params = new window.URLSearchParams(window.location.search);
@@ -44,7 +41,7 @@
         });
       }
 
-      if ($(context).find(".E-enlaces-adicionales-menu .enlace-editar-perfil a").length && ($uid > 0)) {
+      if ($(context).find(".E-enlaces-adicionales-menu .enlace-editar-perfil a").length) {
         //Ocultar el modal
         $("main").once("add-modal-content-edit-user").prepend(`<div class='modal-load-edit-user-form'>
           <div class="modales modal fade" tabindex="-1" id="modal-load-edit-user-form-auto-login" aria-hidden="true">
@@ -68,9 +65,8 @@
           $('#modal-load-edit-user-form-auto-login').addClass('modal-edit-user-show show');
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
-          $has = encodeURIComponent($has);
-          let $url_site = `${$url_host}/userautenticacion/${$has}/${$uuid}/edituser?redirect=${$url_redirect}&autologin=login`;
-          
+          let $url_site = `${$url_host_external}/tienda_autologin/redirect`;
+
           let height = $(window).height();
           $('#modal-load-edit-user-form-auto-login').find('h3').text("Editar Usuario");
 	      $('#modal-load-edit-user-form-auto-login').find("#load-edit-user-form-content").prepend(`<iframe id="iframe_set_password_form" title="Editar usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
@@ -109,7 +105,7 @@
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_resetpassword);
           let $redirect_external = encodeURIComponent(drupalSettings.tienda_autologin.redirect_siteexternal);
-          let $url_site = `${$url_host}/user/password?destination=${$url_redirect}&redirect_external=${$redirect_external}&autologin=login&op=resetpassword`;
+          let $url_site = `${$url_host}/redirect/externalsite?destination=${$url_redirect}&redirect_external=${$redirect_external}&autologin=login&op=resetpassword`;
 
           $('#modal-load-register-form-auto-login').find('h3').text("Recuperar Contraseña");
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_set_password_form" title="Recuperar contraseña del usuario" width="580" height="450" src="${$url_site}" frameBorder="0"></iframe>`);
@@ -123,7 +119,7 @@
           $('#modal-load-register-form-auto-login').addClass('modal-register-show show');
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_register);
-          let $url_site = `${$url_host}/user/register?redirect=${$url_redirect}&autologin=true&op=register`;
+          let $url_site = `${$url_host}/redirect/externalsite?redirect=${$url_redirect}&autologin=true&op=register`;
 
           let height = $(window).height();
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_register_form" title="Registro de usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
