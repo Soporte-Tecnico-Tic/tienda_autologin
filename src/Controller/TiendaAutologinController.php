@@ -27,7 +27,7 @@ class TiendaAutologinController extends ControllerBase {
     $url_redirect_external = "/";
     if (!\Drupal::currentUser()->isAnonymous()) {
       if ($reponse_external = $session->get('tienda_autologin_response_external', null)) {
-        $jwt_token = base64_encode(urlencode($reponse_external["access_token"]));
+        $jwt_token = str_replace(['+','/','='], ['-','_',''], base64_encode($reponse_external["access_token"]));
         $url_redirect_external = "$url_host_external/syncautenticacionjwt/{$jwt_token}/edituser?redirect={$pagina_ok_edituser}&autologin=login";
 
         if ($config->get('debug_site_autologin')) {
