@@ -15,17 +15,14 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
    * Auto login del usuario
    */
   public function externalAuthLoginRegister(GetResponseEvent $event) {
+    /*
     $session = \Drupal::request()->getSession();
 
     $config =  \Drupal::config('tienda_autologin.configuration');
     $authentication = \Drupal::service('tienda_autologin.externalauth');
 
     $current = \Drupal::currentUser();
-
-
     if (!\Drupal::currentUser()->isAnonymous()) {
-
-
       if ($reponse_external = $session->get('tienda_autologin_response_external', null)) {
         $access_token_external = $reponse_external['access_token'];
 
@@ -37,8 +34,7 @@ class TiendaAutoLoginSubscriber implements EventSubscriberInterface {
        //   user_logout();
         }
       }
-    }
-
+    }*/
   }
 
   /**
