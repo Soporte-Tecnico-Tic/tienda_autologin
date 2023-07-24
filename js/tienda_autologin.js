@@ -14,7 +14,7 @@
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
                   <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="margin-right: 60px;"></button>
-                  <div class="G-max--700 G-margen--m" style="padding: 44px 20px 120px">
+                  <div class="G-max--700 G-margen--xs" style="padding: 0">
                     <div id="load-message-user-pass-form-content">
                       <h3 class="G-color--primario G-txt--xxxm G-txt--negrita G-txt--cen">${Drupal.t("La contraseña fue modificada con exito")}</h3>
                       <ul class="G-listado G-flex G-flex-v--cen E-enlaces-adicionales-menu">
@@ -49,7 +49,7 @@
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
                   <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="margin-right: -20px;"></button>
-                  <div class="G-max--700 G-margen--m" style="padding: 44px 20px 120px">
+                  <div class="G-max--700 G-margen--xs" style="padding: 0">
                     <div id="load-edit-user-form-content"></div>
                   </div>
                 </section>

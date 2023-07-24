@@ -52,7 +52,7 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
             <div class="modal-content">
               <section class="E-espacio-cabecera G-fondo--blanco">
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="G-max--700 G-margen--m" style="padding: 0">
+                <div class="G-max--700 G-margen--xs" style="padding: 0">
                   <div id="load-register-form-content"></div>
                 </div>
               </section>
