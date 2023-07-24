@@ -13,6 +13,9 @@
   justify-content: center;
   align-items: center;
 }
+.modal .modal-reset-password-show .modal-content {
+  overflow: hidden;
+}
 .modal.fade:not(.show) {
   display: none;
 }
