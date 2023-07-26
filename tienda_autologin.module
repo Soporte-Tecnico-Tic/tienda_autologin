@@ -47,7 +47,7 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
   switch ($form_id) {
     case 'user_login_form':
       $form['more-links']['#suffix'] = Markup::create('<div id="load-register-form-auto-login">
-        <div class="modales modal fade" tabindex="-1" id="modal-load-register-form-auto-login" aria-hidden="true">
+        <div class="modales modal fade modal-custom-style-autologin" tabindex="-1" id="modal-load-register-form-auto-login" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <section class="E-espacio-cabecera G-fondo--blanco">
