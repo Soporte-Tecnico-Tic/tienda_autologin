@@ -14,3 +14,5 @@ tienda_autologin.redirectite:
     _title: 'Redirigir sitio external'
   requirements:
     _permission: 'access content'
+  options:
+    no_cache: 'TRUE'

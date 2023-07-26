@@ -9,7 +9,7 @@
       var params = new window.URLSearchParams(window.location.search);
       if (params.get('mensaje_externo_sync') == 'resetpassword') {
         $("main").once("add-modal-content-pass-user").prepend(`<div class='modal-message-pass-user-form'>
-          <div class="modales modal fade" tabindex="-1" id="modal-message-pass-form-auto-login" aria-hidden="true">
+          <div class="modales modal modal-custom-style-autologin fade" tabindex="-1" id="modal-message-pass-form-auto-login" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
@@ -44,7 +44,7 @@
       if ($(context).find(".E-enlaces-adicionales-menu .enlace-editar-perfil a").length) {
         //Ocultar el modal
         $("main").once("add-modal-content-edit-user").prepend(`<div class='modal-load-edit-user-form'>
-          <div class="modales modal fade" tabindex="-1" id="modal-load-edit-user-form-auto-login" aria-hidden="true">
+          <div class="modales modal fade modal-custom-style-autologin" tabindex="-1" id="modal-load-edit-user-form-auto-login" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
