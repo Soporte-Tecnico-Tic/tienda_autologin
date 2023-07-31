@@ -97,34 +97,17 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
     $user_name = $form_state->getValue('name');
     $user_pass = trim($form_state->getValue('pass'));
 
-    $authentication = \Drupal::service('tienda_autologin.externalauth');
-    $response = $authentication->login($user_name, $user_pass);
-
     //Excluir si posee algun rol especificado por la interfaz para que se loguee con la constraseña front
     if ($account = user_load_by_name($user_name)) {
       foreach ($config->get('roles_exclude') as $role) {
         if (in_array($role, $account->getRoles())) {
-          //user_logout();
-          $config =  \Drupal::config('tienda_autologin.configuration');
-          $api_url = $config->get('backend_url');
-          $client = \Drupal::httpClient();
-
-          /*
-          if (!empty($response['logout_token'])) {
-            $logout_token = $response['logout_token'];
-            $response = $client->get("{$api_url}/user/logout?_format=json&token={$logout_token}", [
-              'headers' => [
-                'Accept' => "application/json", 
-                'Content-Type' => "application/json"
-              ],
-              'verify' => boolval($config->get('certificate_url'))
-            ]);
-          }
-          */
           return;
         }
       }
     }
+
+    $authentication = \Drupal::service('tienda_autologin.externalauth');
+    $response = $authentication->login($user_name, $user_pass);
 
     if (!empty($response["error"])) {
       $key = key($response["error"]);
