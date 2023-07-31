@@ -49,7 +49,7 @@ class TiendaAutoLoginForm extends ConfigFormBase {
     foreach ($roles as $rol) {
       $options[$rol->id()] = $rol->label();
     }
-    $options['administrator'] = ['Administrator'];
+    $options['administrator'] = 'Administrator';
 
     $form['roles_exclude'] = [
       '#type' => 'select',
