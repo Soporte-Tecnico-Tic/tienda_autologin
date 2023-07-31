@@ -71,6 +71,8 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
           unset($form['#validate'][$key2]);
 
           $form['#validate'][] = 'tienda_autologin_get_account';
+          $form['#validate'][] = 'tienda_autologin_set_usuarios_permitidos';
+
           $form['#validate'][] = '::validateFinal';
           $form['#validate'][] = 'tienda_autologin_set_values_external';
 
@@ -97,6 +99,32 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
 
     $authentication = \Drupal::service('tienda_autologin.externalauth');
     $response = $authentication->login($user_name, $user_pass);
+
+    //Excluir si posee algun rol especificado por la interfaz para que se loguee con la constraseña front
+    if ($account = user_load_by_name($user_name)) {
+      foreach ($config->get('roles_exclude') as $role) {
+        if (in_array($role, $account->getRoles())) {
+          //user_logout();
+          $config =  \Drupal::config('tienda_autologin.configuration');
+          $api_url = $config->get('backend_url');
+          $client = \Drupal::httpClient();
+
+          /*
+          if (!empty($response['logout_token'])) {
+            $logout_token = $response['logout_token'];
+            $response = $client->get("{$api_url}/user/logout?_format=json&token={$logout_token}", [
+              'headers' => [
+                'Accept' => "application/json", 
+                'Content-Type' => "application/json"
+              ],
+              'verify' => boolval($config->get('certificate_url'))
+            ]);
+          }
+          */
+          return;
+        }
+      }
+    }
 
     if (!empty($response["error"])) {
       $key = key($response["error"]);
@@ -126,70 +154,135 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
   $config =  \Drupal::config('tienda_autologin.configuration');
   $authentication = \Drupal::service('tienda_autologin.externalauth');
 
-  $access_token_external = $form_state->getValue('access_token_external');
-
-  //auto login
-  $status_user = $authentication->getLoginStatus($access_token_external);
-  if ($config->get('debug_site_autologin')) {
-    \Drupal::logger('tienda_autologin')->notice("response status user: " . print_r($status_user, 1));
-  }
-
-  if ($status_user) {
-    $uid = $form_state->getValue('current_user_uid');
-    $user_values = $authentication->getUser($access_token_external, $uid);
+  if ($access_token_external = $form_state->getValue('access_token_external')) {
+    //auto login
+    $status_user = $authentication->getLoginStatus($access_token_external);
     if ($config->get('debug_site_autologin')) {
-      \Drupal::logger('tienda_autologin')->notice("response get user: " . print_r($user_values, 1));
+      \Drupal::logger('tienda_autologin')->notice("response status user: " . print_r($status_user, 1));
     }
 
-    //destroy values
-    unset($user_values['uid']);
-    unset($user_values['uuid']);
-
-    $email = $user_values['mail'][0]['value'];
-    if ($account = user_load_by_mail($email)) {
-      //user_login_finalize($account);
-    }
-    else {// Create user object.
-      $account = User::create();
-      foreach ($user_values as $key => $datas) {
-        foreach ($datas as $data) {
-          if (!empty($data['value'])) {
-            $account->set($key, $data['value']);
-          }
-          if (!empty($data['target_id'])) {
-            $account->set($key, $data['target_id']);
-          }
-          if ($key == 'created' || $key == 'changed') {
-            $account->set($key, strtotime($data['value']));
-          }
-        }
+    if ($status_user) {
+      $uid = $form_state->getValue('current_user_uid');
+      $user_values = $authentication->getUser($access_token_external, $uid);
+      if ($config->get('debug_site_autologin')) {
+        \Drupal::logger('tienda_autologin')->notice("response get user: " . print_r($user_values, 1));
       }
 
-      $account->enforceIsNew();
-      $account->activate();
-      $account->save();
-    }
-    $form_state->set('uid', $account->id());
+      //destroy values
+      unset($user_values['uid']);
+      unset($user_values['uuid']);
 
-    if (!$account->isActive()) {
-      //destroy cookie tienda_autologin_user
-      user_logout();
+      $email = $user_values['name'][0]['value'];
+      if ($account = user_load_by_name($email)) {
+        //user_login_finalize($account);
+      }
+      else {// Create user object.
+        $account = User::create();
+        foreach ($user_values as $key => $datas) {
+          foreach ($datas as $data) {
+            if (!empty($data['value'])) {
+              $account->set($key, $data['value']);
+            }
+            if (!empty($data['target_id'])) {
+              $account->set($key, $data['target_id']);
+            }
+            if ($key == 'created' || $key == 'changed') {
+              $account->set($key, strtotime($data['value']));
+            }
+          }
+        }
 
-      return $form_state->setErrorByName('name', t("El usuario no ha sido activado o está bloqueado."));
+        $account->enforceIsNew();
+        $account->activate();
+        $account->save();
+      }
+      $form_state->set('uid', $account->id());
+
+      if (!$account->isActive()) {
+        //destroy cookie tienda_autologin_user
+        user_logout();
+
+        return $form_state->setErrorByName('name', t("El usuario no ha sido activado o está bloqueado."));
+      }
     }
   }
+
   return $form;
 }
 
 /**
- * 
+ * Validar el login del usuario si se ha de loguear con los accesos del drupal front
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param $form_id
+ */
+function tienda_autologin_set_usuarios_permitidos(&$form, FormStateInterface $form_state) {
+  $config =  \Drupal::config('tienda_autologin.configuration');
+
+  if (!$form_state->get('uid') && !$form_state->getValue('access_token_external')) {
+    $password = trim($form_state->getValue('pass'));
+
+    if (!$form_state->isValueEmpty('name') && strlen($password) > 0) {
+      $flood_config = \Drupal::config('user.flood');
+      $user_flood_control = \Drupal::service('user.flood_control');
+
+      if (!$user_flood_control->isAllowed('user.failed_login_ip', $flood_config->get('ip_limit'), $flood_config->get('ip_window'))) {
+        $form_state->set('flood_control_triggered', 'ip');
+        return;
+      }
+
+      $accounts = \Drupal::entityTypeManager()->getStorage('user')->loadByProperties(['name' => $form_state->getValue('name'), 'status' => 1]);
+      $account = reset($accounts);
+
+      if ($account) {
+        if ($flood_config->get('uid_only')) {
+          // Register flood events based on the uid only, so they apply for any
+          // IP address. This is the most secure option.
+          $identifier = $account->id();
+        }
+        else {
+          // The default identifier is a combination of uid and IP address. This
+          // is less secure but more resistant to denial-of-service attacks that
+          // could lock out all users with public user names.
+          $identifier = $account->id() . '-' . \Drupal::request()->getClientIp();
+        }
+        $form_state->set('flood_control_user_identifier', $identifier);
+
+        // Don't allow login if the limit for this user has been reached.
+        // Default is to allow 5 failed attempts every 6 hours.
+        if (!$user_flood_control->isAllowed('user.failed_login_user', $flood_config->get('user_limit'), $flood_config->get('user_window'), $identifier)) {
+          $form_state->set('flood_control_triggered', 'user');
+          return;
+        }
+
+        //crear la session de drupal front
+        $user_roles = $account->getRoles();
+        foreach ($config->get('roles_exclude') as $role) {
+          if (in_array($role, $user_roles)) {
+            $user_auth = \Drupal::service('user.auth')->authenticate($form_state->getValue('name'), $password);
+            if (!$user_auth) {
+              return $form_state->setErrorByName('name', t("El usuario o contraseña son incorrectos"));
+            }
+            $form_state->set('uid', $user_auth);
+          }
+        }
+      }
+      else {
+        return $form_state->setErrorByName('name', t("El usuario no existe y no se puede loguear"));
+      }
+    }
+  }
+}
+
+/**
+ * Asignar los valores del response del usuario
  */
 function tienda_autologin_set_values_external(&$form, FormStateInterface $form_state) {
-  $content_user = $form_state->getValue('current_user_values');
-
-  //almacenar en session el usuario del microservicio
-  $session = \Drupal::request()->getSession();
-  $session->set('tienda_autologin_response_external', $content_user);
+  if ($content_user = $form_state->getValue('current_user_values')) {
+    //almacenar en session el usuario del microservicio
+    $session = \Drupal::request()->getSession();
+    $session->set('tienda_autologin_response_external', $content_user);
+  }
 }
 
 /**
@@ -204,14 +297,15 @@ function tienda_autologin_user_logout(AccountInterface $account) {
     try {
       $client = \Drupal::httpClient();
       $session = \Drupal::request()->getSession();
-
       if ($reponse_external = $session->get('tienda_autologin_response_external', null)) {
         $token_logout = $reponse_external['logout_token'];
+        $token_csrf = $reponse_external['csrf_token'];
+        $access_token_external = $reponse_external['access_token'];
 
-        $response = $client->get("{$api_url}/user/logout?_format={$format}&token={$token_logout}", [
+        $response = $client->post("{$api_url}/user/logout?_format={$format}", [
           'headers' => [
-            'Accept' => "application/{$format}", 
-            'Content-Type' => "application/{$format}"
+            'Content-Type' => "application/{$format}",
+            //'Authorization' => "Bearer {$access_token_external}",
           ],
           'verify' => boolval($config->get('certificate_url'))
         ]);
