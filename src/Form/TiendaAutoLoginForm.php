@@ -49,12 +49,15 @@ class TiendaAutoLoginForm extends ConfigFormBase {
     foreach ($roles as $rol) {
       $options[$rol->id()] = $rol->label();
     }
+    $options['administrator'] = ['Administrator'];
+
     $form['roles_exclude'] = [
       '#type' => 'select',
       '#title' => $this->t('Roles exclude'),
       '#description' => $this->t('Los usuarios que posean los roles seleccionado podran loguearse sin conectarse al microservicio si existen en la DB del sitio'),
       '#default_value' => $config->get('roles_exclude'),
-      '#options' => $options
+      '#options' => $options,
+      '#multiple' => true
     ];
 
     $form['certificate_url'] = [
