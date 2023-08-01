@@ -100,7 +100,7 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
     //Excluir si posee algun rol especificado por la interfaz para que se loguee con la constraseña front
     if ($account = user_load_by_name($user_name)) {
       foreach ($config->get('roles_exclude') as $role) {
-        if (in_array($role, $account->getRoles())) {
+        if (in_array($role, $account->getRoles()) || $account->id() == 1) {
           return;
         }
       }
@@ -241,7 +241,7 @@ function tienda_autologin_set_usuarios_permitidos(&$form, FormStateInterface $fo
         //crear la session de drupal front
         $user_roles = $account->getRoles();
         foreach ($config->get('roles_exclude') as $role) {
-          if (in_array($role, $user_roles)) {
+          if (in_array($role, $user_roles) || $account->id() == 1) {
             $user_auth = \Drupal::service('user.auth')->authenticate($form_state->getValue('name'), $password);
             if (!$user_auth) {
               return $form_state->setErrorByName('name', t("El usuario o contraseña son incorrectos"));
