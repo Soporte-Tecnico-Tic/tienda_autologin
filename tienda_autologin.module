@@ -111,7 +111,7 @@ function tienda_autologin_auth_authenticate(&$form, FormStateInterface $form_sta
 
     if (!empty($response["error"])) {
       $key = key($response["error"]);
-      return $form_state->setErrorByName('name', $response["error"][$key]);
+      return $form_state->setErrorByName('name', t($response["error"][$key]));
     }
 
     if (!empty($response['body'])) {
@@ -155,8 +155,12 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
       unset($user_values['uid']);
       unset($user_values['uuid']);
 
-      $email = $user_values['name'][0]['value'];
-      if ($account = user_load_by_name($email)) {
+      $name = $user_values['name'][0]['value'];
+      $email = $user_values['mail'][0]['value'];
+      if ($account = user_load_by_name($name)) {
+        //user_login_finalize($account);
+      }
+      else if ($account = user_load_by_mail($email)) {
         //user_login_finalize($account);
       }
       else {// Create user object.
@@ -179,6 +183,7 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
         $account->activate();
         $account->save();
       }
+
       $form_state->set('uid', $account->id());
 
       if (!$account->isActive()) {
@@ -244,14 +249,14 @@ function tienda_autologin_set_usuarios_permitidos(&$form, FormStateInterface $fo
           if (in_array($role, $user_roles) || $account->id() == 1) {
             $user_auth = \Drupal::service('user.auth')->authenticate($form_state->getValue('name'), $password);
             if (!$user_auth) {
-              return $form_state->setErrorByName('name', t("El usuario o contraseña son incorrectos"));
+              return $form_state->setErrorByName('name', t($config->get('validation_message_site_autologin.value')));
             }
             $form_state->set('uid', $user_auth);
           }
         }
       }
       else {
-        return $form_state->setErrorByName('name', t("El usuario no existe y no se puede loguear"));
+        return $form_state->setErrorByName('name', t($config->get('validation_message_site_account_missing.value')));
       }
     }
   }
