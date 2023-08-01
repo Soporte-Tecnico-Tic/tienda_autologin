@@ -223,7 +223,8 @@ class ExternalAuth {
         return $content;
       }
       else {
-        return ['error' => $content['body']];
+        //return ['error' => $content['body']];
+        return ['error' => ['message' => $this->config->get('validation_message_site_autologin.value')]];
       }
     } catch (RequestException $e) {
       if (!$e->hasResponse()) {
