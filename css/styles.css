@@ -28,7 +28,7 @@
 .modal-custom-style-autologin.modal .modal-dialog {
   max-width: 580px !important;
   margin: auto;
-  padding: 44px 20px;
+  padding: 44px 0;
   position: static;
 }
 .modal-custom-style-autologin.modal .modal-header {
