@@ -14,12 +14,12 @@
               <div class="modal-content">
                 <section class="E-espacio-cabecera G-fondo--blanco">
                   <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="margin-right: 60px;"></button>
-                  <div class="G-max--700 G-margen--xs" style="padding: 0">
+                  <div class="G-max--700 G-margen--xs" style="padding: 44px">
                     <div id="load-message-user-pass-form-content">
                       <h3 class="G-color--primario G-txt--xxxm G-txt--negrita G-txt--cen">${Drupal.t("La contraseña fue modificada con exito")}</h3>
-                      <ul class="G-listado G-flex G-flex-v--cen E-enlaces-adicionales-menu">
+                      <ul class="G-listado G-flex G-flex-v--cen E-enlaces-adicionales-menu" style="list-style-type: none; margin-top: 20px; padding-left: 0;">
                         <li class="enlace-area" style="margin: auto">
-                          <a href="/user/login" style="border: 2px solid #296aa5; background-color: #296aa5; color: white; cursor: pointer; text-decoration: none; border-radius: 50px; padding: 7px 14px; line-height: 1;">${Drupal.t("Área usuarios")}</a>
+                          <a href="/user/login" style="border: 2px solid #296aa5; background-color: #296aa5; color: white; cursor: pointer; text-decoration: none; border-radius: 50px; padding: 7px 14px; line-height: 1;">${Drupal.t("Iniciar sesión")}</a>
                         </li>
                       </ul>
                     </div>
