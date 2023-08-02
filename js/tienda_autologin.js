@@ -97,9 +97,7 @@
       });
 
       if ($(context).find('a[href*="/usuario/clave"]').length) {
-        $(context).find('a[href*="/usuario/clave"]').once('mostrar-reset-password-page').click(function(event) {
-          event.preventDefault();
-
+        let usuariomodal = function () {
           $('#modal-load-register-form-auto-login').show();
           $('#modal-load-register-form-auto-login').addClass('modal-reset-password-show show');
 
@@ -109,6 +107,18 @@
 
           $('#modal-load-register-form-auto-login').find('h3').text("Recuperar Contraseña");
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_set_password_form" title="Recuperar contraseña del usuario" width="580" height="450" src="${$url_site}" frameBorder="0"></iframe>`);
+        };
+
+        $(document).ready(function () {
+          $('.noty_bar').find('a[href*="/usuario/clave"]').once('mostrar-reset-password-noty-bar').click(function () {
+            event.preventDefault();
+            usuariomodal();
+          });
+        });
+
+        $(context).find('a[href*="/usuario/clave"]').once('mostrar-reset-password-page').click(function(event) {
+          event.preventDefault();
+          usuariomodal();
         });
       }
 
