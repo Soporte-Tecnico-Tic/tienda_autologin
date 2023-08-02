@@ -129,7 +129,8 @@
           $('#modal-load-register-form-auto-login').addClass('modal-register-show show');
 
           let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_register);
-          let $url_site = `${$url_host}/redirect/externalsite?redirect=${$url_redirect}&autologin=true&op=register`;
+          let $redirect_host_external = encodeURIComponent(drupalSettings.tienda_autologin.redirect_host_external);
+          let $url_site = `${$url_host}/redirect/externalsite?redirect=${$url_redirect}&autologin=true&op=register&redirect_external=${$redirect_host_external}`;
 
           let height = $(window).height();
 	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_register_form" title="Registro de usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
