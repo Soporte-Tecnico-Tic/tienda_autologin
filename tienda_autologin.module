@@ -255,9 +255,6 @@ function tienda_autologin_set_usuarios_permitidos(&$form, FormStateInterface $fo
           }
         }
       }
-      else {
-        return $form_state->setErrorByName('name', t($config->get('validation_message_site_account_missing.value')));
-      }
     }
   }
 }

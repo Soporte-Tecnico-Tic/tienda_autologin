@@ -70,17 +70,6 @@ class TiendaAutoLoginForm extends ConfigFormBase {
       '#required' => TRUE,
     ];
 
-    $form['validation_message_site_account_missing'] = [
-      '#title' => t('Mensaje de validación - Cuenta no existe al hacer login'),
-      '#type' => 'text_format',
-      '#description' => t('Mensaje que se ha de mostrar al usuario cuando se intente loguear con una cuenta no existente'),
-      '#default_value' => $config->get('validation_message_site_account_missing.value'),
-      '#format' => $config->get('validation_message_site_account_missing.format'),
-      '#rows' => 5,
-      '#required' => TRUE,
-    ];
-
-
     $form['certificate_url'] = [
       '#type' => 'radios',
       '#title' => t('Verificar el certificado del HOST'),
@@ -143,7 +132,6 @@ class TiendaAutoLoginForm extends ConfigFormBase {
         'roles_exclude',
         'certificate_url',
         'validation_message_site_autologin',
-        'validation_message_site_account_missing',
         'debug_site_autologin',
         'pagina_ok_autologin',
         'pagina_ok_resetpassword',
