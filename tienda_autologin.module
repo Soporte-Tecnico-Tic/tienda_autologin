@@ -14,6 +14,18 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Render\Markup;
 
 /**
+ * Implements hook_theme().
+ */
+function tienda_autologin_theme($existing, $type, $theme, $path) {
+  return [
+    'crear_tienda_autologin_form_template' => [
+      'template' => 'crear-tienda-autologin-form',
+      'render element' => 'form'
+    ]
+  ];
+}
+
+/**
  * hook_preprocess_page
  */
 function tienda_autologin_preprocess(&$variables, $hook) {
@@ -36,6 +48,8 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $config->get('backend_url');
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host_external'] = $url_host;
 
+  $variables['#attached']['library'][] = 'core/drupal.ajax';
+
 }
 
 /**
@@ -46,20 +60,12 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
 
   switch ($form_id) {
     case 'user_login_form':
-      $form['more-links']['#suffix'] = Markup::create('<div id="load-register-form-auto-login">
-        <div class="modales modal fade modal-custom-style-autologin" tabindex="-1" id="modal-load-register-form-auto-login" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <section class="E-espacio-cabecera G-fondo--blanco">
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"></button>
-                <div class="G-max--700 G-margen--xs" style="padding: 0">
-                  <div id="load-register-form-content"></div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-      </div>');
+
+      $form_reg = \Drupal::formBuilder()->getForm('Drupal\tienda_autologin\Form\TiendaRegistroUsuarioForm');
+      $form['more-links']['register_button']['#suffix'] = Markup::create('<button type="button" link="/tienda_autologin/get-user-register-form" id="modal-register-form" class="register-button button button--secondary">
+        Crear nueva cuenta
+        </button>
+');
 
       $config =  \Drupal::config('tienda_autologin.configuration');
       if (@in_array('::validateFinal', $form['#validate'])) {
@@ -305,7 +311,7 @@ function tienda_autologin_user_logout(AccountInterface $account) {
         throw $e;
       }
       $response = $e->getResponse();
-  
+
       $data = Json::Decode($response->getBody()->getContents());
       $messenger = \Drupal::Messenger();
       $messenger->addMessage($data["message"],$messenger::TYPE_ERROR,true);
