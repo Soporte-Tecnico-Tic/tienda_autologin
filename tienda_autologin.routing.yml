@@ -16,3 +16,12 @@ tienda_autologin.redirectite:
     _permission: 'access content'
   options:
     no_cache: 'TRUE'
+
+
+tienda_autologin.get_user_register_form:
+  path: '/tienda_autologin/get-user-register-form'
+  defaults:
+    _form: '\Drupal\tienda_autologin\Form\TiendaRegistroUsuarioForm'
+    _title: 'Crear nueva cuenta'
+  requirements:
+    _permission: 'access content'
