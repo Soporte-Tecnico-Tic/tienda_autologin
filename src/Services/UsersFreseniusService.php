@@ -7,8 +7,7 @@ class UsersFreseniusService {
         if(!empty($data)) {
             //Connection info:
           $prod_endpoint = 'https://www.usuariosfresenius.com/api/v1/user/register';
-//          $dev_endpoint = 'https://usuariosfresenius.creacionwebprofesional.com/api/v1/user/register';
-          $dev_endpoint = 'https://usuariosfresenius.ddev.site/api/v1/user/register';
+          $dev_endpoint = 'https://usuariosfresenius.creacionwebprofesional.com/api/v1/user/register';
 
             //Prepare data
             $body = json_encode($data);
