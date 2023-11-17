@@ -11,24 +11,20 @@ class UsersFreseniusService {
 
             //Prepare data
             $body = json_encode($data);
-          $token_jwt = 'vhQjw7CaceTMhfGGpYI+tGKXBI7BSc926QzKnhMdlUr/XhL+3RDABf6XeNRbQ2QsyiKljXJbdKjwa/6smmVF2w==';
 
             $client = \Drupal::httpClient();
+
             $headers = [
-                'Authorization: Bearer ' . $token_jwt,
                 'Content-Type' => 'application/json'
             ];
-                      $response = $client->post($dev_endpoint, [
+
+            $response = $client->post($dev_endpoint, [
                 'body' => $body,
                 'headers' => $headers
             ]);
 
 
-            $code = $response->getStatusCode();
-
-
-            return $code;
-
+          return $response->getStatusCode();
         }else {
             return "Empty data.";
         }
