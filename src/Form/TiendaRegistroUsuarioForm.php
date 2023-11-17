@@ -203,32 +203,31 @@ class TiendaRegistroUsuarioForm extends FormBase {
       'especialidad' => $especialidad_tid,
       'genero' => $genero_tid,
     ];
-    try {
-      //Calling Creation service
-      $createNutritalksUSer = \Drupal::service('tienda_autologin.user_register');
-      $createNutritalksUSer = $createNutritalksUSer->post($user_data);
-      if($createNutritalksUSer == 200 ) {
-        \Drupal::logger('enviar_registro_usuario')->notice($createNutritalksUSer);
 
+    try {
+      $createUserFresenius = \Drupal::service('tienda_autologin.user_register');
+      $createUserFresenius = $createUserFresenius->post($user_data);
+
+      if($createUserFresenius == 200 ) {
+        \Drupal::logger('enviar_registro_usuario')->notice($createUserFresenius);
         \Drupal::messenger()->addMessage('El usuario ha sido creado correctamente.');
-        $url = '/usuario/acceso';
-        $response = new RedirectResponse($url);
-        $response->send();
-        exit();
-      }else {
-        \Drupal::messenger()->addError('El usuario no ha sido creado.');
-        $url = '/usuario/acceso';
-        $response = new RedirectResponse($url);
-        $response->send();
-        exit();
       }
-    } catch (Exception $e) {
-      \Drupal::logger('enviar_registro_usuario')->error($e->getMessage());
-      \Drupal::messenger()->addError('El usuario no ha sido creado.');
+      elseif ($createUserFresenius == 405)
+      {
+        \Drupal::messenger()->addError('Ya existe un usuario con ese correo electrónico.');
+      }
+      else{
+        \Drupal::messenger()->addError('El usuario no ha sido creado.');
+      }
+
       $url = '/usuario/acceso';
       $response = new RedirectResponse($url);
       $response->send();
       exit();
+
+    } catch (Exception $e) {
+      \Drupal::logger('enviar_registro_usuario')->error($e->getMessage());
+      \Drupal::messenger()->addError('El usuario no ha sido creado.');
     }
   }
 
