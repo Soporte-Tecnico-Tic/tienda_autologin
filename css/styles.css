@@ -14,7 +14,6 @@
   align-items: center;
 }
 
-
 .modal-custom-style-autologin.modal .modal-reset-password-show .modal-content {
   overflow: hidden;
 }
@@ -23,7 +22,7 @@
 }
 .modal-custom-style-autologin.modal.show {
   display: flex !important;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 .modal-custom-style-autologin.modal .modal-dialog {
   max-width: 580px !important;
