@@ -47,7 +47,6 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_siteexternal'] = $url_host;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $config->get('backend_url');
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host_external'] = $url_host;
-
   $variables['#attached']['library'][] = 'core/drupal.ajax';
 
 }
@@ -168,46 +167,48 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
     if ($status_user) {
       $uid = $form_state->getValue('current_user_uid');
       $user_values = $authentication->getUser($access_token_external, $uid);
+      $user_values = reset($user_values);
       if ($config->get('debug_site_autologin')) {
         \Drupal::logger('tienda_autologin')->notice("response get user: " . print_r($user_values, 1));
       }
 
-      //destroy values
-      unset($user_values['uid']);
-      unset($user_values['uuid']);
+      if (!empty($user_values)) {
+        //destroy values
+        unset($user_values['uid']);
+        unset($user_values['uuid']);
 
-      $name = $user_values['name'][0]['value'];
-      $email = $user_values['mail'][0]['value'];
-      if ($account = user_load_by_name($name)) {
-        //user_login_finalize($account);
-      }
-      else if ($account = user_load_by_mail($email)) {
-        //user_login_finalize($account);
-      }
-      else {// Create user object.
-        $account = User::create();
-        foreach ($user_values as $key => $datas) {
-          foreach ($datas as $data) {
-            if (!empty($data['value'])) {
-              $account->set($key, $data['value']);
-            }
-            if (!empty($data['target_id'])) {
-              $account->set($key, $data['target_id']);
-            }
-            if ($key == 'created' || $key == 'changed') {
-              $account->set($key, strtotime($data['value']));
+        $name = $user_values['name'][0]['value'];
+        $email = $user_values['mail'][0]['value'];
+        if ($account = user_load_by_name($name)) {
+          //user_login_finalize($account);
+        }
+        else if ($account = user_load_by_mail($email)) {
+          //user_login_finalize($account);
+        }
+        else {// Create user object.
+          $account = User::create();
+          foreach ($user_values as $key => $datas) {
+            foreach ($datas as $data) {
+              if (!empty($data['value'])) {
+                $account->set($key, $data['value']);
+              }
+              if (!empty($data['target_id'])) {
+                $account->set($key, $data['target_id']);
+              }
+              if ($key == 'created' || $key == 'changed') {
+                $account->set($key, strtotime($data['value']));
+              }
             }
           }
-        }
 
-        $account->enforceIsNew();
-        $account->activate();
-        $account->save();
+          $account->enforceIsNew();
+          $account->activate();
+          $account->save();
+        }
+        $form_state->set('uid', $account->id());
       }
 
-      $form_state->set('uid', $account->id());
-
-      if (!$account->isActive()) {
+      if (!empty($account) && !$account->isActive()) {
         //destroy cookie tienda_autologin_user
         user_logout();
 
