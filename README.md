@@ -8,8 +8,8 @@ Cuando se edite un usuario se estará redireccionando al formulario de editar de
 main lasted version
 * composer require soporte-tecnico-tic/tienda_autologin
 
-dev version
-* composer require soporte-tecnico-tic/tienda_autologin:@dev
+dev lasted version
+* composer require soporte-tecnico-tic/tienda_autologin:dev-develop
 
 ## MÁS INFO:
 ### https://github.com/Soporte-Tecnico-Tic/tienda_autologin/releases
