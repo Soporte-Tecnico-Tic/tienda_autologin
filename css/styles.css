@@ -23,7 +23,7 @@
 }
 .modal-custom-style-autologin.modal.show {
   display: flex !important;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 .modal-custom-style-autologin.modal .modal-dialog {
   max-width: 580px !important;
@@ -113,8 +113,177 @@
   transition:ease all 0.4s;
 }
 
+.ui-dialog{
+  width: 580px!important;
+  /*height: 869px!important;*/
+}
+.ui-dialog:not(.ui-dialog-off-canvas){
+  border-radius: 0 none!important;
+}
+.layout-container{
+  margin-bottom: 4rem;
+}
+#drupal-modal{
+  /*height: 100%!important;*/
+  /*max-height: 100%!important;*/
+}
+.ui-widget-overlay.ui-front{
+  background-color: rgba(0,0,0,0.8);
+}
+body.gin-login .user-form-page__page-title {
+  font-size: 2rem!important;
+  margin-top: 0!important;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+  text-overflow: unset;
+  white-space: normal;
+  text-align: center;
+}
+.ui-dialog .ui-dialog-titlebar-close{
+  position: fixed!important;
+  right: 40px !important;
+  top: 30px !important;
+  background-color: white !important;
+  padding: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: block !important;
+  border-radius: 30px !important;
+  background-size: 60% !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  opacity: 0.8;
+  transition: ease all 0.4s;
+}
+.ui-dialog .ui-dialog-titlebar-close .ui-icon-closethick{
+  background-size: contain;
+  background:transparent url(/modules/custom/tienda_autologin/assets/icons/x-sin-circulo.svg) no-repeat center center!important;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  margin: 0;
+  padding: 0;
+  z-index: 99;
+  color: white;
+  opacity: 1;
+  font-weight: 400;
+  font-size: 0;
+  min-width: 30px;
+  height: 30px;
+  width: 30px;
+  border: none;
+  cursor: pointer;
+}
+.ui-dialog .ui-dialog-titlebar{
+  background: #fff!important;
+  border-radius: 0 none!important;
+}
+.ui-dialog .ui-dialog-title{
+  display: none!important;
+}
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset{
+  float: left;
+}
+.ui-dialog .description{
+  margin-top: 0.375rem;
+  margin-bottom: 0.375rem;
+  color: #55565b;
+  font-size: 0.79rem;
+  line-height: 1.0625rem;
+}
+
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset button{
+  padding: calc(1rem - 2px) calc(1.5rem - 2px);
+  border: 2px solid #3f3f3f !important;
+  border-top-color: rgb(63, 63, 63);
+  border-right-color: rgb(63, 63, 63);
+  border-bottom-color: rgb(63, 63, 63);
+  border-left-color: rgb(63, 63, 63);
+  border-radius: 6px;
+  -webkit-box-shadow: 0 1px 2px var(--colorGinPrimaryLight);
+  box-shadow: 0 1px 2px var(--colorGinPrimaryLight);
+  color: #3f3f3f !important;
+  background-color: white !important;
+}
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset button:hover{
+  background-color: #3f3f3f !important;
+  color: white !important;
+  border-color: #3f3f3f !important;
+}
+
+
+
 @media (min-width: 576px) {
   .modal-custom-style-autologin .E-espacio-cabecera > button.close {
     top: 15px !important;
   }
+}
+
+form .switch {
+  display: inline-block;
+  height: 24px;
+  position: relative;
+  width: 48px
+}
+
+form .switch input {
+  height: 0;
+  opacity: 0;
+  width: 0
+}
+
+form .switch .slider {
+  background-color: rgb(141, 141, 141);
+  border-radius: 34px;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  right: 0;
+  top: 0
+}
+
+form .switch .slider,
+form .switch .slider:before {
+  position: absolute;
+  transition: .4s
+}
+
+form .switch .slider:before {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255/var(--tw-bg-opacity));
+  border-radius: 9999px;
+  bottom: 4px;
+  content: "";
+  height: 16px;
+  left: 4px;
+  width: 16px
+}
+
+form .switch input:checked+.slider {
+  background-color: #6ebaed;
+}
+
+form .switch input:focus+.slider {
+  box-shadow: 0 0 1px #2196f3
+}
+
+form .switch input:checked+.slider:before {
+  transform: translateX(24px)
+}
+
+.tienda-autologin-registro-usuario .form-item {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+header .layout-container{
+  margin-right: 0!important;
+  margin-left: 0!important;
+}
+.toolbar-icon-base{
+  border-left: 3px solid #a3e5ef;
+  padding: 10px 0 10px 10px;
+  margin-left: 8px;
+}
+.toolbar-icon-home{
+  padding: 10px 0 10px 10px;
 }

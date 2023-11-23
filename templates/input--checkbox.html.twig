@@ -1,0 +1,47 @@
+{#
+/**
+ * @file
+ * Theme override for an 'input' #type form element.
+ *
+ * Available variables:
+ * - attributes: A list of HTML attributes for the input element.
+ * - children: Optional additional rendered elements.
+ *
+ * @see template_preprocess_input()
+ */
+#}
+
+{#{% if attributes.hasClass('button') and not attributes.hasClass('field-add-more-submit') and not attributes.hasClass('btn') %}#}
+{#  {%#}
+{#    set classes = [#}
+{#    'btn',#}
+{#    attributes.hasClass('button--danger') ? 'btn-danger' : '',#}
+{#    (not attributes.hasClass('media-library-item__remove') and not attributes.hasClass('button--danger')) ? 'btn-primary' : ''#}
+{#  ]#}
+{#  %}#}
+{#  <input{{ attributes.addClass(classes) }} />#}
+{#{% else %}#}
+{#  <input{{ attributes }} />#}
+{#{% endif %}#}
+{#sssss#}
+{#{{ children }}#}
+
+
+{#<div class="form-check form-switch">#}
+{#  <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">#}
+{#  {{ children }}#}
+{#  <label class="form-check-label" for="flexSwitchCheckDefault">{{ label }}</label>#}
+{#</div>#}
+
+
+
+<div{{ attributes.addClass(classes) }}>
+  <label class="switch">
+    <input{{ attributes }} />
+    {{ children }}
+    <span class="slider"></span>
+  </label>
+  <p style="padding-bottom: 0;padding-top: 0;">{{ label }}</p>
+</div>
+
+

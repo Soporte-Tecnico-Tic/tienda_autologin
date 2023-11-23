@@ -31,7 +31,7 @@
         </div>`);
         $('#modal-message-pass-form-auto-login').show();
         $('#modal-message-pass-form-auto-login').addClass('modal-password-show show');
-        
+
         $("#modal-message-pass-form-auto-login").find('.close').once('modal-load-pass-user-form-auto-login-close').click(function () {
           $('#modal-message-pass-form-auto-login').hide();
 
@@ -71,8 +71,8 @@
           $('#modal-load-edit-user-form-auto-login').find('h3').text("Editar Usuario");
 	      $('#modal-load-edit-user-form-auto-login').find("#load-edit-user-form-content").prepend(`<iframe id="iframe_set_password_form" title="Editar usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
         });
-        
-        $("#modal-load-edit-user-form-auto-login").find('.close').once('modal-load-edit-user-form-auto-login-close').click(function () {        
+
+        $("#modal-load-edit-user-form-auto-login").find('.close').once('modal-load-edit-user-form-auto-login-close').click(function () {
           $(this).parents('.modal').find('iframe').remove();
           $('#modal-load-edit-user-form-auto-login').hide();
 
@@ -86,7 +86,7 @@
       $("#modal-load-register-form-auto-login .close").click(function () {
         $(this).parents('.modal').find('iframe').remove();
         $('#modal-load-register-form-auto-login').hide();
-        
+
         if ($('#modal-load-register-form-auto-login').hasClass('modal-reset-password-show')) {
           $('#modal-load-register-form-auto-login').removeClass('modal-reset-password-show show');
         }
@@ -133,10 +133,49 @@
           let $url_site = `${$url_host}/redirect/externalsite?redirect=${$url_redirect}&autologin=true&op=register&redirect_external=${$redirect_host_external}`;
 
           let height = $(window).height();
-	      $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_register_form" title="Registro de usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
-
+	       $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_register_form" title="Registro de usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
         });
       }
     }
   };
+
+
 })(jQuery, Drupal, drupalSettings);
+
+
+
+(function ($, Drupal, drupalSettings) {
+  Drupal.behaviors.tienda_autologin_modal = {
+    attach: function (context, settings) {
+      $('#edit-register-button').remove();
+      $('#modal-register-form').once().click(function (e) {
+        e.preventDefault();
+        $url = $(this).attr('link');
+        $tipo = $(this).attr('tipo');
+
+        if ($tipo == undefined) {
+          $class = 'modal-class';
+        }
+        else {
+          $class = $tipo;
+        }
+
+        var ajaxSettings = {
+          url: $url,
+          dialogType: 'modal',
+          dialogOptions: {
+            dialogClass: $class,
+            width: 580,
+            height: 869,
+            multiple: true,
+          }
+        };
+        var myAjaxObject = Drupal.ajax(ajaxSettings);
+        myAjaxObject.execute();
+      });
+    }
+  }
+})(jQuery, Drupal);
+
+
+

@@ -1,7 +1,7 @@
 services:
   tienda_autologin.externalauth:
     class: Drupal\tienda_autologin\ExternalAuth
-    arguments: ['@entity_type.manager', '@logger.channel.tienda_autologin', '@event_dispatcher']  
+    arguments: ['@entity_type.manager', '@logger.channel.tienda_autologin', '@event_dispatcher']
   logger.channel.tienda_autologin:
     parent: logger.channel_base
     arguments: ['tienda_autologin']
@@ -9,3 +9,7 @@ services:
     class: Drupal\tienda_autologin\EventSubscriber\TiendaAutoLoginSubscriber
     tags:
       - {name: event_subscriber}
+  tienda_autologin.user_register:
+    class: Drupal\tienda_autologin\Services\UsersFreseniusService
+    tags:
+      - { name: tienda_autologin_user_registro_service }

@@ -4,6 +4,7 @@
  * Module for the Tienda autologin User Entity.
  */
 use \Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Session\AccountInterface;
 use GuzzleHttp\Exception\RequestException;
@@ -12,6 +13,21 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Url;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Render\Markup;
+
+/**
+ * Implements hook_theme().
+ */
+function tienda_autologin_theme($existing, $type, $theme, $path) {
+  return [
+    'crear_tienda_autologin_form_template' => [
+      'template' => 'crear-tienda-autologin-form',
+      'render element' => 'form'
+    ],
+    'input__checkbox' => [
+      'base hook' => 'input'
+    ],
+  ];
+}
 
 /**
  * hook_preprocess_page
@@ -35,7 +51,38 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_siteexternal'] = $url_host;
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host'] = $config->get('backend_url');
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host_external'] = $url_host;
+  $variables['#attached']['library'][] = 'core/drupal.ajax';
 
+  //configuracion del sitio
+  $config = \Drupal::config('system.site');
+  $variables['site_name'] = $config->get('name');
+
+  $database = \Drupal::database();
+  $sql = "SELECT * FROM logos";
+  $result = $database->query($sql);
+
+  $logo = "";
+  if ($result) {
+    $temp = $result->fetchAll();
+
+    if (!empty($temp)) {
+      foreach ($temp as $item) {
+        //imagen
+
+        $id_imagen = $item->logo__target_id;
+        if ($item->type == 'header') {
+          if ($id_imagen) {
+            $file = File::load($id_imagen);
+            if ($file instanceof File) {
+              $logo = $file->createFileUrl(FALSE);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  $variables['logo_header'] = $logo;
 }
 
 /**
@@ -46,6 +93,7 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
 
   switch ($form_id) {
     case 'user_login_form':
+
       $form['more-links']['#suffix'] = Markup::create('<div id="load-register-form-auto-login">
         <div class="modales modal fade modal-custom-style-autologin" tabindex="-1" id="modal-load-register-form-auto-login" aria-hidden="true">
           <div class="modal-dialog">
@@ -60,6 +108,12 @@ function tienda_autologin_form_alter(&$form, FormStateInterface $form_state, $fo
           </div>
         </div>
       </div>');
+
+      $form_reg = \Drupal::formBuilder()->getForm('Drupal\tienda_autologin\Form\TiendaRegistroUsuarioForm');
+      $form['more-links']['register_button']['#suffix'] = Markup::create('<button type="button" link="/tienda_autologin/get-user-register-form" id="modal--register-form" class="register-button button button--secondary">
+        Crear nueva cuenta
+        </button>
+');
 
       $config =  \Drupal::config('tienda_autologin.configuration');
       if (@in_array('::validateFinal', $form['#validate'])) {
@@ -147,46 +201,48 @@ function tienda_autologin_get_account(&$form, FormStateInterface $form_state) {
     if ($status_user) {
       $uid = $form_state->getValue('current_user_uid');
       $user_values = $authentication->getUser($access_token_external, $uid);
+      $user_values = reset($user_values);
       if ($config->get('debug_site_autologin')) {
         \Drupal::logger('tienda_autologin')->notice("response get user: " . print_r($user_values, 1));
       }
 
-      //destroy values
-      unset($user_values['uid']);
-      unset($user_values['uuid']);
+      if (!empty($user_values)) {
+        //destroy values
+        unset($user_values['uid']);
+        unset($user_values['uuid']);
 
-      $name = $user_values['name'][0]['value'];
-      $email = $user_values['mail'][0]['value'];
-      if ($account = user_load_by_name($name)) {
-        //user_login_finalize($account);
-      }
-      else if ($account = user_load_by_mail($email)) {
-        //user_login_finalize($account);
-      }
-      else {// Create user object.
-        $account = User::create();
-        foreach ($user_values as $key => $datas) {
-          foreach ($datas as $data) {
-            if (!empty($data['value'])) {
-              $account->set($key, $data['value']);
-            }
-            if (!empty($data['target_id'])) {
-              $account->set($key, $data['target_id']);
-            }
-            if ($key == 'created' || $key == 'changed') {
-              $account->set($key, strtotime($data['value']));
+        $name = $user_values['name'][0]['value'];
+        $email = $user_values['mail'][0]['value'];
+        if ($account = user_load_by_name($name)) {
+          //user_login_finalize($account);
+        }
+        else if ($account = user_load_by_mail($email)) {
+          //user_login_finalize($account);
+        }
+        else {// Create user object.
+          $account = User::create();
+          foreach ($user_values as $key => $datas) {
+            foreach ($datas as $data) {
+              if (!empty($data['value'])) {
+                $account->set($key, $data['value']);
+              }
+              if (!empty($data['target_id'])) {
+                $account->set($key, $data['target_id']);
+              }
+              if ($key == 'created' || $key == 'changed') {
+                $account->set($key, strtotime($data['value']));
+              }
             }
           }
-        }
 
-        $account->enforceIsNew();
-        $account->activate();
-        $account->save();
+          $account->enforceIsNew();
+          $account->activate();
+          $account->save();
+        }
+        $form_state->set('uid', $account->id());
       }
 
-      $form_state->set('uid', $account->id());
-
-      if (!$account->isActive()) {
+      if (!empty($account) && !$account->isActive()) {
         //destroy cookie tienda_autologin_user
         user_logout();
 
@@ -305,7 +361,7 @@ function tienda_autologin_user_logout(AccountInterface $account) {
         throw $e;
       }
       $response = $e->getResponse();
-  
+
       $data = Json::Decode($response->getBody()->getContents());
       $messenger = \Drupal::Messenger();
       $messenger->addMessage($data["message"],$messenger::TYPE_ERROR,true);

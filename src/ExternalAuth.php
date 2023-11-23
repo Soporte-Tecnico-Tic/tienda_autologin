@@ -149,7 +149,7 @@ class ExternalAuth {
    */
   public function getUser($access_token_external, $user_uid, $format = 'json') {
     try {
-      $response = $this->client->get("{$this->api_url}/user/{$user_uid}?_format={$format}", [
+      $response = $this->client->get("{$this->api_url}/current-user?_format={$format}", [
         'headers' => [
           'Accept' => 'application/json', 
           'Content-Type' => 'application/json',

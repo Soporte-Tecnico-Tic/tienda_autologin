@@ -1,0 +1,16 @@
+{{ form.form_build_id }}
+{{ form.form_token }}
+{{ form.form_id }}
+
+<header class="content-header clearfix">
+  <div class="layout-container">
+    <img src="{{ logo_header }}" alt="{{ site_name }}" class="toolbar-icon-home">
+{#    <img src="/themes/custom/frontend/assets/gin/logo_gin_login.svg" alt="MicroServicio Fresenius Kabi" class="toolbar-icon-base">#}
+
+    {% if form['#logo_fresenius_header']['#value'] != "" %}
+      <img src="{{ form['#logo_fresenius_header']['#value'] }}" alt="MicroServicio Fresenius Kabi" class="toolbar-icon-base">
+    {% endif %}
+  </div>
+</header>
+<h1 class="page-title user-form-page__page-title">Crear nueva cuenta</h1>
+{{ form }}
