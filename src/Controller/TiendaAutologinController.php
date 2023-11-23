@@ -1,6 +1,7 @@
 <?php
 namespace Drupal\tienda_autologin\Controller;
 
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\user\Entity\User;

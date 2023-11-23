@@ -14,6 +14,7 @@
   align-items: center;
 }
 
+
 .modal-custom-style-autologin.modal .modal-reset-password-show .modal-content {
   overflow: hidden;
 }
@@ -211,8 +212,78 @@ body.gin-login .user-form-page__page-title {
 }
 
 
+
 @media (min-width: 576px) {
   .modal-custom-style-autologin .E-espacio-cabecera > button.close {
     top: 15px !important;
   }
+}
+
+form .switch {
+  display: inline-block;
+  height: 24px;
+  position: relative;
+  width: 48px
+}
+
+form .switch input {
+  height: 0;
+  opacity: 0;
+  width: 0
+}
+
+form .switch .slider {
+  background-color: rgb(141, 141, 141);
+  border-radius: 34px;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  right: 0;
+  top: 0
+}
+
+form .switch .slider,
+form .switch .slider:before {
+  position: absolute;
+  transition: .4s
+}
+
+form .switch .slider:before {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255/var(--tw-bg-opacity));
+  border-radius: 9999px;
+  bottom: 4px;
+  content: "";
+  height: 16px;
+  left: 4px;
+  width: 16px
+}
+
+form .switch input:checked+.slider {
+  background-color: #6ebaed;
+}
+
+form .switch input:focus+.slider {
+  box-shadow: 0 0 1px #2196f3
+}
+
+form .switch input:checked+.slider:before {
+  transform: translateX(24px)
+}
+
+.tienda-autologin-registro-usuario .form-item {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+header .layout-container{
+  margin-right: 0!important;
+  margin-left: 0!important;
+}
+.toolbar-icon-base{
+  border-left: 3px solid #a3e5ef;
+  padding: 10px 0 10px 10px;
+  margin-left: 8px;
+}
+.toolbar-icon-home{
+  padding: 10px 0 10px 10px;
 }
