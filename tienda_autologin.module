@@ -4,6 +4,7 @@
  * Module for the Tienda autologin User Entity.
  */
 use \Drupal\Core\Form\FormStateInterface;
+use Drupal\file\Entity\File;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Session\AccountInterface;
 use GuzzleHttp\Exception\RequestException;
@@ -21,7 +22,10 @@ function tienda_autologin_theme($existing, $type, $theme, $path) {
     'crear_tienda_autologin_form_template' => [
       'template' => 'crear-tienda-autologin-form',
       'render element' => 'form'
-    ]
+    ],
+    'input__checkbox' => [
+      'base hook' => 'input'
+    ],
   ];
 }
 
@@ -49,6 +53,36 @@ function tienda_autologin_preprocess(&$variables, $hook) {
   $variables['#attached']['drupalSettings']['tienda_autologin']['redirect_host_external'] = $url_host;
   $variables['#attached']['library'][] = 'core/drupal.ajax';
 
+  //configuracion del sitio
+  $config = \Drupal::config('system.site');
+  $variables['site_name'] = $config->get('name');
+
+  $database = \Drupal::database();
+  $sql = "SELECT * FROM logos";
+  $result = $database->query($sql);
+
+  $logo = "";
+  if ($result) {
+    $temp = $result->fetchAll();
+
+    if (!empty($temp)) {
+      foreach ($temp as $item) {
+        //imagen
+
+        $id_imagen = $item->logo__target_id;
+        if ($item->type == 'header') {
+          if ($id_imagen) {
+            $file = File::load($id_imagen);
+            if ($file instanceof File) {
+              $logo = $file->createFileUrl(FALSE);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  $variables['logo_header'] = $logo;
 }
 
 /**

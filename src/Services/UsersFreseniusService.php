@@ -1,32 +1,33 @@
 <?php
 namespace Drupal\tienda_autologin\Services;
 
+use Drupal\Component\Serialization\Json;
+
 class UsersFreseniusService {
 
-    public function post(array $data) {
-        if(!empty($data)) {
-            //Connection info:
-          $prod_endpoint = 'https://www.usuariosfresenius.com/api/v1/user/register';
-          $dev_endpoint = 'https://usuariosfresenius.creacionwebprofesional.com/api/v1/user/register';
+  public function post(array $data) {
+    if (!empty($data)) {
+      $config = \Drupal::config('tienda_autologin.configuration');
+      $url_api = $config->get('backend_url');
 
-            //Prepare data
-            $body = json_encode($data);
+      //Prepare data
+      $body = Json::encode($data);
+      $client = \Drupal::httpClient();
 
-            $client = \Drupal::httpClient();
+      $headers = [
+        'Content-Type' => 'application/json',
+      ];
 
-            $headers = [
-                'Content-Type' => 'application/json'
-            ];
+      $response = $client->post($url_api . '/api/v1/user/register', [
+        'body' => $body,
+        'headers' => $headers,
+      ]);
 
-            $response = $client->post($dev_endpoint, [
-                'body' => $body,
-                'headers' => $headers
-            ]);
-
-
-          return $response->getStatusCode();
-        }else {
-            return "Empty data.";
-        }
+      return $response->getStatusCode();
     }
+    else {
+      return "Empty data.";
+    }
+  }
+
 }

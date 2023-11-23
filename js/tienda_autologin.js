@@ -41,6 +41,47 @@
         });
       }
 
+      if ($(context).find(".E-enlaces-adicionales-menu .enlace-editar-perfil a").length) {
+        //Ocultar el modal
+        $("main").once("add-modal-content-edit-user").prepend(`<div class='modal-load-edit-user-form'>
+          <div class="modales modal fade modal-custom-style-autologin" tabindex="-1" id="modal-load-edit-user-form-auto-login" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <section class="E-espacio-cabecera G-fondo--blanco">
+                  <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="margin-right: -20px;"></button>
+                  <div class="G-max--700 G-margen--xs" style="padding: 0">
+                    <div id="load-edit-user-form-content"></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>`);
+
+
+        $(context).find(".E-enlaces-adicionales-menu .enlace-area.enlace-editar-perfil a").once('mostrar-edit-user-page').click(function(event) {
+          event.preventDefault();
+          $('#modal-load-edit-user-form-auto-login').show();
+          $('#modal-load-edit-user-form-auto-login').addClass('modal-edit-user-show show');
+
+          let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_edituser);
+          let $url_site = `${$url_host_external}/tienda_autologin/redirect`;
+
+          let height = $(window).height();
+          $('#modal-load-edit-user-form-auto-login').find('h3').text("Editar Usuario");
+	      $('#modal-load-edit-user-form-auto-login').find("#load-edit-user-form-content").prepend(`<iframe id="iframe_set_password_form" title="Editar usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
+        });
+
+        $("#modal-load-edit-user-form-auto-login").find('.close').once('modal-load-edit-user-form-auto-login-close').click(function () {
+          $(this).parents('.modal').find('iframe').remove();
+          $('#modal-load-edit-user-form-auto-login').hide();
+
+          if ($('#modal-load-edit-user-form-auto-login').hasClass('modal-edit-user-show')) {
+            $('#modal-load-edit-user-form-auto-login').removeClass('modal-edit-user-show show');
+          }
+        });
+      }
+
       //Ocultar el modal
       $("#modal-load-register-form-auto-login .close").click(function () {
         $(this).parents('.modal').find('iframe').remove();
@@ -75,9 +116,24 @@
           });
         });
 
-        $(context).find('a[href*="/usuario/clave"]').once('mostrar-reset-password-page').click(function(event) {        
+        $(context).find('a[href*="/usuario/clave"]').once('mostrar-reset-password-page').click(function(event) {
           event.preventDefault();
           usuariomodal();
+        });
+      }
+
+      if ($(context).find('a[href*="/usuario/registro"]').length) {
+        $(context).find('a[href*="/usuario/registro"]').once('mostrar-register-page').click(function(event) {
+          event.preventDefault();
+          $('#modal-load-register-form-auto-login').show();
+          $('#modal-load-register-form-auto-login').addClass('modal-register-show show');
+
+          let $url_redirect = encodeURIComponent(drupalSettings.tienda_autologin.redirect_register);
+          let $redirect_host_external = encodeURIComponent(drupalSettings.tienda_autologin.redirect_host_external);
+          let $url_site = `${$url_host}/redirect/externalsite?redirect=${$url_redirect}&autologin=true&op=register&redirect_external=${$redirect_host_external}`;
+
+          let height = $(window).height();
+	       $('#modal-load-register-form-auto-login').find("#load-register-form-content").prepend(`<iframe id="iframe_register_form" title="Registro de usuario" width="580" height="${height}" src="${$url_site}" frameBorder="0"></iframe>`);
         });
       }
     }
@@ -92,7 +148,7 @@
   Drupal.behaviors.tienda_autologin_modal = {
     attach: function (context, settings) {
       $('#edit-register-button').remove();
-      $('#modal--register-form').once().click(function (e) {
+      $('#modal-register-form').once().click(function (e) {
         e.preventDefault();
         $url = $(this).attr('link');
         $tipo = $(this).attr('tipo');
