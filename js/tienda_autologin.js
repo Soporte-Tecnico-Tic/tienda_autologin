@@ -148,7 +148,7 @@
   Drupal.behaviors.tienda_autologin_modal = {
     attach: function (context, settings) {
       $('#edit-register-button').remove();
-      $('#modal-register-form').once().click(function (e) {
+      $('#modal--register-form').once().click(function (e) {
         e.preventDefault();
         $url = $(this).attr('link');
         $tipo = $(this).attr('tipo');

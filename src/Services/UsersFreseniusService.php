@@ -18,7 +18,7 @@ class UsersFreseniusService {
         'Content-Type' => 'application/json',
       ];
 
-      $response = $client->post($url_api . '/api/v1/user/register', [
+      $response = $client->post($url_api . '/api/v1/user', [
         'body' => $body,
         'headers' => $headers,
       ]);
