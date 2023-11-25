@@ -37,7 +37,7 @@ class TiendaRegistroUsuarioForm extends FormBase {
 
       if (!empty($result)) {
         foreach ($result as $item) {
-          if ($item['tipo'] == 'header') {
+          if ($item['tipo'] == 'secundario') {
             $logo_fresenius = $item['url'];
           }
         }
@@ -224,11 +224,11 @@ class TiendaRegistroUsuarioForm extends FormBase {
       'apellidos' => $values['field_apellidos'] ?? NULL,
       'hospital' => $values['field_hospital'],
       'numero_colegiado' => $values['field_numero_de_colegiado'] ?? NULL,
-      'bool_numero_colegiado' => $bool_colegiado,
+      'bool_numero_colegiado' => $values['field_no_tengo_numero_de_colegia'],
       'pais' => $values['field_pais'],
       'provincia' => $values['field_provincia'],
       'telefono' => $values['field_telefono'] ?? NULL,
-      'bool_tratamiento_datos' => 'true',//$values['field_tratamiento_de_datos'][0]['value'],
+      'bool_tratamiento_datos' => $values['field_acepto_la_politica_de_priv'],
       'especialidad' => $values['field_especialidad'],
       'genero' => $values['field_genero'],
     ];
